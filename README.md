@@ -194,19 +194,11 @@ Access the application at `http://localhost:8501`
 
 ```
 teleco-customer-churn-aws/
+├── .gitignore
+├── README.md
+├── data/
+│   └── teleco-customer-churn.csv
 ├── notebooks/              # Jupyter notebooks for ML pipeline
-│   ├── 01_eda_preprocessing.ipynb
-│   ├── 02_model_training.ipynb
-│   ├── 03_model_evaluation.ipynb
-│   └── 04_deployment.ipynb
-├── scripts/                # Training scripts for custom models
-│   ├── train_rf.py
-│   ├── train_svm.py
-│   └── preprocess.py
-├── lambda/                 # AWS Lambda function
-│   ├── lambda_function.py
-│   ├── requirements.txt
-│   └── deploy.sh
 ├── src/
 │   └── app/                # Streamlit web application
 │       ├── app.py
@@ -218,9 +210,7 @@ teleco-customer-churn-aws/
 │           ├── docker-compose.yml
 │           ├── requirements.txt
 │           └── .dockerignore
-├── data/                   # Dataset
-│   └── telco_churn.csv
-└── README.md
+└── env/                    # Virtual environment (local development)
 ```
 
 ## Cost Optimization
