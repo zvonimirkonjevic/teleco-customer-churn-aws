@@ -253,20 +253,29 @@ teleco-customer-churn-aws/
 ├── .gitignore
 ├── README.md
 ├── data/
-│   └── teleco-customer-churn.csv
-├── notebooks/              # Jupyter notebooks for ML pipeline
+│   ├── teleco-customer-churn.csv          # Original dataset
+│   ├── teleco-customer-churn-cleaned.csv  # Cleaned dataset from EDA
+│   └── processed/                          # Preprocessed data for modeling
+│       ├── train_smote.csv                 # Training data with SMOTE (8,278 samples)
+│       ├── train_original.csv              # Original training data (5,634 samples)
+│       ├── test.csv                        # Test data (1,409 samples)
+│       ├── feature_names.pkl               # List of 46 feature names
+│       └── scaler.pkl                      # Fitted StandardScaler object
+├── notebooks/
+│   ├── 01_eda_preprocessing.ipynb          # Exploratory Data Analysis
+│   └── 02_data_preprocessing.ipynb         # Data preprocessing pipeline
 ├── src/
-│   └── app/                # Streamlit web application
+│   └── app/                                # Streamlit web application
 │       ├── app.py
 │       ├── .streamlit/
 │       │   ├── config.toml
 │       │   └── secrets.toml.example
-│       └── environment/    # Docker and dependencies
+│       └── environment/                    # Docker and dependencies
 │           ├── Dockerfile
 │           ├── docker-compose.yml
 │           ├── requirements.txt
 │           └── .dockerignore
-└── env/                    # Virtual environment (local development)
+└── env/                                    # Virtual environment (local development)
 ```
 
 ## Key Learnings
