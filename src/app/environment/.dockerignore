@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+environment/
+.env
+.venv
+*.log
+.git
+.gitignore
+.streamlit/secrets.toml
+*.md
