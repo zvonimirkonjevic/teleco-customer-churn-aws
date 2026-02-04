@@ -165,8 +165,30 @@ Execute the notebooks sequentially:
 **5. Deploy Lambda & API Gateway**
 Deploy the Lambda function that handles authentication and request forwarding. Configure API Gateway to create a public REST endpoint.
 
-**6. Run Streamlit Application**
-Install the required Python dependencies and launch the Streamlit web application locally. The app will connect to the deployed API Gateway endpoint for predictions.
+**6. Configure and Run Streamlit Application**
+
+Set up the API endpoint configuration:
+```bash
+cd src/app
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
+# Edit .streamlit/secrets.toml and add your API Gateway endpoint URL
+```
+
+**Option A: Run with Docker (Recommended)**
+```bash
+cd environment
+docker-compose up -d
+```
+
+**Option B: Run Locally**
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r environment/requirements.txt
+streamlit run app.py
+```
+
+Access the application at `http://localhost:8501`
 
 ## Project Structure
 
@@ -185,10 +207,17 @@ teleco-customer-churn-aws/
 │   ├── lambda_function.py
 │   ├── requirements.txt
 │   └── deploy.sh
-├── app/                    # Streamlit web application
-│   ├── app.py
-│   ├── requirements.txt
-│   └── config.py
+├── src/
+│   └── app/                # Streamlit web application
+│       ├── app.py
+│       ├── .streamlit/
+│       │   ├── config.toml
+│       │   └── secrets.toml.example
+│       └── environment/    # Docker and dependencies
+│           ├── Dockerfile
+│           ├── docker-compose.yml
+│           ├── requirements.txt
+│           └── .dockerignore
 ├── data/                   # Dataset
 │   └── telco_churn.csv
 └── README.md
