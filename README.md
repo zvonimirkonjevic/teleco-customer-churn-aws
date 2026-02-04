@@ -213,20 +213,6 @@ teleco-customer-churn-aws/
 └── env/                    # Virtual environment (local development)
 ```
 
-## Cost Optimization
-
-### Development (~$5-10/month)
-- **SageMaker Notebook**: `ml.t3.medium` @ $0.05/hour (stop when not in use)
-- **Training**: `ml.m5.xlarge` @ $0.23/hour (only during training runs)
-- **S3 Storage**: ~$0.023/GB/month
-
-### Production (~$20-50/month for low traffic)
-- **SageMaker Serverless Inference**: $0.20 per 1M requests (recommended)
-- **Lambda**: Free tier covers 1M requests/month
-- **API Gateway**: $3.50 per million requests
-
-**Note**: SageMaker Serverless Inference is recommended over persistent endpoints to minimize costs by paying only for actual usage.
-
 ## Key Learnings
 
 - **End-to-end ML workflow**: From data exploration to production deployment
@@ -235,27 +221,3 @@ teleco-customer-churn-aws/
 - **API design**: Building production-ready REST APIs with proper authentication
 - **Full-stack integration**: Connecting ML models with web applications
 - **Best practices**: Experiment tracking, model versioning, and monitoring
-
-## Future Enhancements
-
-- Add real-time monitoring dashboard for model performance
-- Implement A/B testing for model versions
-- Add automated retraining pipeline with new data
-- Deploy Streamlit app to AWS ECS or App Runner for production hosting
-- Implement feature importance visualization in Streamlit
-- Add email notifications for high-risk customers
-- Create user authentication and multi-tenant support
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/yourusername/teleco-customer-churn-aws/issues).
-
-## Contact
-
-**Zvonimir Konjevic** - [GitHub Profile](https://github.com/zvonimirkonjevic)
-
-Project Link: [https://github.com/yourusername/teleco-customer-churn-aws](https://github.com/yourusername/teleco-customer-churn-aws)
