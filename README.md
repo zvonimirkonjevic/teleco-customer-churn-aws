@@ -75,16 +75,72 @@ Trained and evaluated 5 different algorithms on the telco churn dataset:
 
 ## Data Science Pipeline
 
-### 1. Exploratory Data Analysis
-Comprehensive statistical analysis was performed to understand customer demographics, usage patterns, and churn behavior. This included correlation analysis between features and churn, distribution visualization using histograms and heatmaps, and identification of key churn indicators such as contract type, tenure, and monthly charges.
+### 1. Exploratory Data Analysis (`01_eda_preprocessing.ipynb`)
+Comprehensive statistical analysis to understand customer behavior and identify churn patterns:
 
-### 2. Data Preprocessing
-The preprocessing pipeline includes several critical steps:
-- **Missing Value Handling**: Median imputation for numerical features
-- **Feature Encoding**: One-hot encoding for categorical variables (Contract, InternetService, PaymentMethod)
-- **Normalization**: StandardScaler applied to numerical features (tenure, charges)
-- **Class Balancing**: SMOTE (Synthetic Minority Over-sampling Technique) to address class imbalance
-- **Data Splitting**: 80/20 train/test split for model validation
+**Key Insights:**
+- **Churn Rate**: 26.5% of customers churned
+- **High-Risk Factors**: 
+  - Month-to-month contracts: ~42% churn rate
+  - Fiber optic internet: ~42% churn rate
+  - Electronic check payment: ~45% churn rate
+  - No online security/tech support: Higher churn
+  - Short tenure (<12 months): Higher risk
+
+**Analysis Performed:**
+- Target variable distribution and class imbalance assessment
+- Demographic analysis (gender, senior citizen, partner, dependents)
+- Service usage patterns (internet service, contract type, additional services)
+- Financial analysis (monthly charges, total charges, payment methods)
+- Correlation analysis and feature relationships
+- Customer segmentation visualization
+
+**Visualizations Created:**
+- Churn distribution charts (bar and pie charts)
+- Demographic breakdowns with stacked bar charts
+- Tenure distribution and box plots
+- Service usage heatmaps
+- Financial analysis histograms
+- Correlation matrix
+- Customer segmentation scatter plots
+
+### 2. Data Preprocessing (`02_data_preprocessing.ipynb`)
+Comprehensive data preparation pipeline for model training:
+
+**Data Cleaning:**
+- Converted `TotalCharges` to numeric (11 missing values found)
+- Imputed missing values with `MonthlyCharges` for new customers
+- Removed `customerID` (not predictive)
+
+**Feature Engineering:**
+- `AvgMonthlySpend`: TotalCharges / (tenure + 1)
+- `TenureGroup`: Binned tenure into 4 groups (0-1yr, 1-2yr, 2-4yr, 4-6yr)
+- `TotalServices`: Count of subscribed services (0-6)
+
+**Encoding:**
+- **Binary encoding**: gender, Partner, Dependents, PhoneService, PaperlessBilling, Churn
+- **One-Hot encoding**: MultipleLines, InternetService, OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies, Contract, PaymentMethod, TenureGroup
+- **Result**: 46 features after encoding
+
+**Scaling:**
+- StandardScaler applied to: tenure, MonthlyCharges, TotalCharges, AvgMonthlySpend, TotalServices
+- All features normalized to mean=0, std=1
+
+**Class Imbalance Handling:**
+- **Original distribution**: 5,174 No (73.5%), 1,869 Yes (26.5%)
+- **Train/Test split**: 80/20 stratified split
+- **SMOTE applied**: Training set balanced to 4,139 samples per class
+- **Final datasets**:
+  - Training (with SMOTE): 8,278 samples
+  - Training (original): 5,634 samples
+  - Test: 1,409 samples
+
+**Output Files:**
+- `data/processed/train_smote.csv`: Balanced training data
+- `data/processed/train_original.csv`: Original training data
+- `data/processed/test.csv`: Test data
+- `data/processed/scaler.pkl`: Fitted StandardScaler
+- `data/processed/feature_names.pkl`: Feature column names
 
 ### 3. Model Training & Evaluation
 Five different algorithms were trained and compared:
