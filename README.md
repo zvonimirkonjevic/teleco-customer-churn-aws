@@ -59,6 +59,11 @@ This project implements an end-to-end machine learning pipeline that predicts wh
 - **Pandas**: Data handling and preprocessing
 - **AWS SDK**: Cloud service integration
 
+### Development Tools
+- **uv**: Fast Python package installer and resolver (replaces pip/pip-tools)
+- **pyproject.toml**: Modern Python project configuration
+- **Docker**: Containerization for consistent deployment
+
 ## Model Performance
 
 Trained and evaluated 5 different algorithms on the telco churn dataset:
@@ -196,8 +201,9 @@ The application uses Streamlit to provide an interactive web interface for makin
 
 ### Prerequisites
 - AWS Account with SageMaker, Lambda, and API Gateway access
-- Python 3.8+
-- Streamlit (for web application)
+- Python 3.12+ (required by project configuration)
+- [uv](https://docs.astral.sh/uv/) - Fast Python package manager (install with `curl -LsSf https://astral.sh/uv/install.sh | sh`)
+- Docker (optional, for containerized deployment)
 - AWS CLI configured
 
 ### Quick Start
@@ -235,16 +241,23 @@ cp .streamlit/secrets.toml.example .streamlit/secrets.toml
 cd environment
 docker-compose up -d
 ```
+Access the application at `http://localhost:8501`
 
-**Option B: Run Locally**
+**Option B: Run Locally with uv**
+
+This project uses [uv](https://docs.astral.sh/uv/) for fast, reliable Python package management. uv automatically manages dependencies and virtual environments.
+
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r environment/requirements.txt
-streamlit run app.py
+# Install dependencies and create virtual environment
+uv sync
+
+# Run the Streamlit application
+uv run streamlit run app.py
 ```
 
 Access the application at `http://localhost:8501`
+
+> **Why uv?** uv is 10-100x faster than pip, provides deterministic dependency resolution, and seamlessly manages virtual environments. It reads from `pyproject.toml` to ensure consistent development and production environments.
 
 ## Project Structure
 
