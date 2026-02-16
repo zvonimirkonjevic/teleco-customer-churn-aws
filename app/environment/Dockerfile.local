@@ -17,8 +17,8 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN uv sync --frozen --only-group app
 
 # Copy application files
-COPY app.py config.py api_client.py components.py ./
-COPY .streamlit/ .streamlit/
+COPY app/app.py app/config.py app/api_client.py app/components.py ./
+COPY app/.streamlit/ .streamlit/
 
 # Expose Streamlit port
 EXPOSE 8501
