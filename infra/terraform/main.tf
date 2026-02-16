@@ -59,7 +59,7 @@ resource "aws_sagemaker_endpoint_configuration" "xgboost_endpoint_config" {
     name = "teleco-customer-churn-xgboost-endpoint-config"
 
     production_variants {
-      variant_name = "AllTrafic"
+      variant_name = "AllTraffic"
       model_name = aws_sagemaker_model.xgboost_model.name
       initial_instance_count = 1
       instance_type = "ml.m5.large"
