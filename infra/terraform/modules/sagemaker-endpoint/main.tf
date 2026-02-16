@@ -20,8 +20,10 @@ resource "aws_sagemaker_endpoint_configuration" "xgboost_endpoint_config" {
     production_variants {
       variant_name = "AllTraffic"
       model_name = aws_sagemaker_model.xgboost_model.name
-      initial_instance_count = 1
-      instance_type = "ml.m5.large"
+      serverless_config {
+        max_concurrency = var.max_concurrency
+        memory_size_in_mb = var.memory_size_in_mb
+      }
     }
 }
 
