@@ -9,11 +9,12 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements file
-COPY requirements.txt .
+# Copy uv project files from the repository root
+COPY pyproject.toml uv.lock ./
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies using uv from the lockfile
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+RUN uv sync --frozen --only-group app
 
 # Copy application files from parent directory
 COPY ../app.py .
