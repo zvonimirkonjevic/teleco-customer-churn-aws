@@ -17,3 +17,8 @@ variable "memory_size_in_mb" {
     type        = number
     description = "Memory size in MB for the serverless endpoint"
 }
+
+variable "iam_role_arn" {
+    type        = string
+    description = "The ARN of the IAM role for SageMaker execution"
+}

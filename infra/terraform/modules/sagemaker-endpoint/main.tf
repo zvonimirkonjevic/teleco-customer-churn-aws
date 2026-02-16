@@ -6,7 +6,7 @@ data "aws_sagemaker_prebuilt_ecr_image" "xgboost" {
 
 resource "aws_sagemaker_model" "xgboost_model" {
   name = "teleco-customer-churn-xgboost-model"
-  execution_role_arn = aws_iam_role.sagemaker_execution_role.arn
+  execution_role_arn = var.iam_role_arn
 
   primary_container {
     image = data.aws_sagemaker_prebuilt_ecr_image.xgboost.registry_path
@@ -20,6 +20,7 @@ resource "aws_sagemaker_endpoint_configuration" "xgboost_endpoint_config" {
     production_variants {
       variant_name = "AllTraffic"
       model_name = aws_sagemaker_model.xgboost_model.name
+      initial_instance_count = 1
       # serverless configuration for cost optimization, intended for showcase purpose.
       serverless_config {
         max_concurrency = var.max_concurrency
