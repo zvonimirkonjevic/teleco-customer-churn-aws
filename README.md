@@ -11,7 +11,7 @@ This project implements an end-to-end machine learning pipeline that predicts wh
 ## Key Features
 
 - **Multi-Algorithm Comparison**: Evaluated 5 different ML algorithms (XGBoost, Random Forest, SVM, KNN, Linear Learner)
-- **High Accuracy**: Best-performing model (XGBoost) achieves 85% accuracy with comprehensive evaluation metrics
+- **High Accuracy**: Best-performing model (XGBoost) achieves 0.84 AUC-ROC with comprehensive evaluation metrics
 - **Cloud-Native Architecture**: Fully deployed on AWS with serverless infrastructure
 - **Production-Ready API**: Secure REST endpoint with IAM authentication via Lambda proxy pattern
 - **Cost-Optimized**: Serverless inference for pay-per-use pricing model
@@ -41,7 +41,7 @@ This project implements an end-to-end machine learning pipeline that predicts wh
 - **Python 3.8+**: Core programming language
 - **Pandas & NumPy**: Data manipulation and analysis
 - **Scikit-Learn**: Preprocessing and model evaluation
-- **XGBoost**: Best-performing algorithm (85% accuracy)
+- **XGBoost**: Best-performing algorithm (0.84 AUC-ROC, 0.63 F1-Score)
 - **Matplotlib & Seaborn**: Data visualization
 - **SMOTE**: Handling class imbalance
 
@@ -66,17 +66,19 @@ This project implements an end-to-end machine learning pipeline that predicts wh
 
 ## Model Performance
 
-Trained and evaluated 5 different algorithms on the telco churn dataset:
+Trained and evaluated 5 different algorithms on the telco churn dataset (ranked by F1-Score):
 
-| Model | Accuracy | Precision | Recall | F1-Score | AUC |
-|-------|----------|-----------|--------|----------|-----|
-| **XGBoost** | **85%** | **82%** | **78%** | **80%** | **88%** |
-| Random Forest | 83% | 80% | 76% | 78% | 86% |
-| SVM | 81% | 78% | 74% | 76% | 84% |
-| Linear Learner | 79% | 75% | 72% | 73% | 82% |
-| KNN | 76% | 72% | 70% | 71% | 79% |
+| Rank | Model | Accuracy | Precision | Recall | F1-Score | AUC-ROC | MCC |
+|------|-------|----------|-----------|--------|----------|---------|-----|
+| 1 | **XGBoost** | **0.7686** | **0.5480** | **0.7326** | **0.6270** | **0.8402** | **0.4746** |
+| 2 | Random Forest | 0.7700 | 0.5510 | 0.7219 | 0.6250 | 0.8383 | 0.4723 |
+| 3 | SVM | 0.7516 | 0.5227 | 0.7380 | 0.6120 | 0.8311 | 0.4511 |
+| 4 | KNN | 0.7452 | 0.5143 | 0.7193 | 0.5998 | N/A | 0.4331 |
+| 5 | Linear Learner | 0.7949 | 0.6300 | 0.5508 | 0.5877 | 0.8294 | 0.4538 |
 
-**Selected Model**: XGBoost was chosen for production deployment based on superior performance across all evaluation metrics.
+**Selected Model**: XGBoost was chosen for production deployment based on the best F1-Score (0.6270) and AUC-ROC (0.8402), balancing precision and recall for churn detection.
+
+> **Note**: SVM achieved the highest Recall (0.7380). Consider it if maximizing churn detection (minimizing missed churners) is the priority. Linear Learner had the highest raw Accuracy (0.7949) and Precision (0.6300) but at the cost of lower Recall.
 
 ## Data Science Pipeline
 
@@ -231,7 +233,7 @@ Deploy the Lambda function that handles authentication and request forwarding. C
 
 Set up the API endpoint configuration:
 ```bash
-cd src/app
+cd app
 cp .streamlit/secrets.toml.example .streamlit/secrets.toml
 # Edit .streamlit/secrets.toml and add your API Gateway endpoint URL
 ```
@@ -263,32 +265,56 @@ Access the application at `http://localhost:8501`
 
 ```
 teleco-customer-churn-aws/
-├── .gitignore
-├── README.md
-├── data/
-│   ├── teleco-customer-churn.csv          # Original dataset
-│   ├── teleco-customer-churn-cleaned.csv  # Cleaned dataset from EDA
-│   └── processed/                          # Preprocessed data for modeling
-│       ├── train_smote.csv                 # Training data with SMOTE (8,278 samples)
-│       ├── train_original.csv              # Original training data (5,634 samples)
-│       ├── test.csv                        # Test data (1,409 samples)
-│       ├── feature_names.pkl               # List of 46 feature names
-│       └── scaler.pkl                      # Fitted StandardScaler object
-├── notebooks/
-│   ├── 01_eda_preprocessing.ipynb          # Exploratory Data Analysis
-│   └── 02_data_preprocessing.ipynb         # Data preprocessing pipeline
-├── src/
-│   └── app/                                # Streamlit web application
-│       ├── app.py
-│       ├── .streamlit/
-│       │   ├── config.toml
-│       │   └── secrets.toml.example
-│       └── environment/                    # Docker and dependencies
-│           ├── Dockerfile
-│           ├── docker-compose.yml
-│           ├── requirements.txt
-│           └── .dockerignore
-└── env/                                    # Virtual environment (local development)
+│
+├── lambda/                                 # AWS Lambda function
+│   └── predict/                            #   SageMaker inference proxy (handler.py)
+│
+├── app/                                    # Streamlit web application (deployed on EC2)
+│   ├── app.py                              #   Entry point — wires components together
+│   ├── config.py                           #   Settings, constants, secrets access
+│   ├── api_client.py                       #   API Gateway communication layer
+│   ├── components.py                       #   Reusable UI components (form, results, sidebar)
+│   ├── .streamlit/                         #   Streamlit config & secrets
+│   └── environment/                        #   Docker & compose for local development
+│
+├── infra/                                  # Infrastructure as Code
+│   └── terraform/
+│       ├── main.tf                         #   Core resource definitions (all AWS resources)
+│       ├── variables.tf                    #   Input variables (region, tags, etc.)
+│       ├── outputs.tf                      #   Output values (API URL, instance ID, etc.)
+│       ├── providers.tf                    #   AWS provider & version constraints
+│       └── terraform.tfvars                #   Variable values for this deployment
+│
+├── buildspec/                              # AWS CodeBuild buildspec files
+│   ├── buildspec_app.yml                   #   Build & deploy Streamlit to EC2
+│   ├── buildspec_lambda.yml                #   Package & deploy Lambda function
+│   └── buildspec_infra.yml                 #   Terraform plan & apply
+│
+├── data/                                   # Datasets
+│   ├── teleco-customer-churn.csv           #   Original dataset
+│   ├── teleco-customer-churn-cleaned.csv   #   Cleaned dataset from EDA
+│   └── processed/                          #   Preprocessed data for modeling
+│       ├── train_smote.csv
+│       ├── train_original.csv
+│       └── test.csv
+│
+├── notebooks/                              # Jupyter notebooks (preprocessing, training, eval)
+│   ├── 01_eda_preprocessing.ipynb
+│   ├── 02_data_preprocessing.ipynb
+│   └── 03_model_training_and_evaluation.ipynb
+│
+├── scripts/                                # SageMaker training scripts (used by notebooks)
+│   ├── rf_train.py
+│   └── svm_train.py
+│
+├── tests/                                  # Test suites
+│   ├── unit/                               #   Fast isolated tests (no AWS calls)
+│   └── integration/                        #   Tests with real/mocked AWS services
+│
+├── docs/                                   # Architecture docs, runbooks, API spec
+│
+├── pyproject.toml                          # Python project config & dependencies
+└── README.md
 ```
 
 ## Key Learnings
