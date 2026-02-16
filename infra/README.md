@@ -7,12 +7,22 @@ Infrastructure as Code (IaC) for the Telco Customer Churn Prediction platform.
 ```
 infra/
 └── terraform/
-    ├── main.tf              # Core resource definitions (all AWS resources)
-    ├── variables.tf         # Input variables (region, tags, etc.)
-    ├── outputs.tf           # Output values (API URL, instance ID, bucket names, etc.)
-    ├── providers.tf         # Provider configurations (AWS provider & version constraints)
+    ├── backend.tf           # Required providers & S3 remote state backend
+    ├── main.tf              # Core resource definitions (SageMaker, IAM)
+    ├── variables.tf         # Input variables (region, model_data_uri)
+    ├── outputs.tf           # Output values (currently empty)
+    ├── providers.tf         # AWS provider alias & region configuration
     └── terraform.tfvars     # Variable values for this deployment
 ```
+
+## Current Resources
+
+| Resource | Description |
+|---|---|
+| **IAM Role** | SageMaker execution role with S3 read access |
+| **SageMaker Model** | XGBoost model using prebuilt SageMaker container (v1.7-1) |
+| **SageMaker Endpoint Config** | Production variant on `ml.m5.large` |
+| **SageMaker Endpoint** | Real-time inference endpoint |
 
 ## Architecture Decisions
 
@@ -20,8 +30,8 @@ infra/
 |---|---|
 | **Flat Terraform layout** | Single folder with all resources — simple project, no module overhead |
 | **Single environment** | Simple project — one flat Terraform root, no multi-env overhead |
-| **CodeBuild + CodeDeploy** | AWS-native CI/CD — no external dependencies, IAM-integrated |
-| **EC2 for app** | Cost-effective for a single Streamlit app; managed via CodeDeploy agent |
+| **S3 remote state** | Encrypted state stored in `teleco-churn-terraform-state` S3 bucket |
+| **Named AWS profile** | Uses `teleco-churn-terraform` profile for credential isolation |
 
 ## Usage
 
@@ -43,5 +53,5 @@ terraform destroy
 
 ## Naming Convention
 
-All resources follow: `telco-churn-{service}-{resource}`  
-Example: `telco-churn-sagemaker-endpoint`, `telco-churn-app-ec2`
+All resources follow: `teleco-customer-churn-{resource}`  
+Example: `teleco-customer-churn-xgboost-model`, `teleco-customer-churn-xgboost-endpoint`
