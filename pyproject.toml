@@ -15,3 +15,9 @@ dependencies = [
     "seaborn>=0.13.2",
     "streamlit>=1.54.0",
 ]
+
+[dependency-groups]
+app = [
+    "streamlit>=1.54.0",
+    "requests>=2.32.5",
+]
