@@ -1,9 +1,11 @@
+# SageMaker prebuilt XGBoost image
 data "aws_sagemaker_prebuilt_ecr_image" "xgboost" {
   region = var.default_region
   repository_name = "xgboost"
   image_tag = "latest"
 }
 
+# Create IAM role for SageMaker
 resource "aws_iam_role" "sagemaker_execution_role" {
   name = "sagemaker-execution-role"
 
@@ -39,4 +41,33 @@ resource "aws_iam_role_policy" "s3_access" {
       ]
     }]
   })
+}
+
+# Create SageMaker model
+resource "aws_sagemaker_model" "xgboost_model" {
+  name = "teleco-customer-churn-xgboost-model"
+  execution_role_arn = aws_iam_role.sagemaker_execution_role.arn
+
+  primary_container {
+    image = data.aws_sagemaker_prebuilt_ecr_image.xgboost.image_uri
+    model_data_url = var.model_data_uri
+  }
+}
+
+# Create SageMaker endpoint configuration
+resource "aws_sagemaker_endpoint_configuration" "xgboost_endpoint_config" {
+    name = "teleco-customer-churn-xgboost-endpoint-config"
+
+    production_variants {
+      variant_name = "AllTrafic"
+      model_name = aws_sagemaker_model.xgboost_model
+      initial_instance_count = 1
+      instance_type = "ml.m5.large"
+    }
+}
+
+# Create SageMaker endpoint
+resource "aws_sagemaker_endpoint" "xgboost_endpoint" {
+    name = "teleco-customer-churn-xgboost-endpoint"
+    endpoint_config_name = aws_sagemaker_endpoint_configuration.xgboost_endpoint_config.name
 }
