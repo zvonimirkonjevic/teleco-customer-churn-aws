@@ -10,7 +10,6 @@ terraform {
     bucket         = "teleco-churn-terraform-state"
     key            = "global/s3/terraform.tfstate"
     region         = "eu-central-1"
-    dynamodb_table = "terraform-state-lock"
     encrypt        = true
     profile        = "teleco-churn-terraform"
   }
