@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 # Set working directory
 WORKDIR /app
@@ -16,9 +16,9 @@ COPY pyproject.toml uv.lock ./
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN uv sync --frozen --only-group app
 
-# Copy application files from parent directory
-COPY ../app.py .
-COPY ../.streamlit/ .streamlit/
+# Copy application files
+COPY app.py config.py api_client.py components.py ./
+COPY .streamlit/ .streamlit/
 
 # Expose Streamlit port
 EXPOSE 8501
