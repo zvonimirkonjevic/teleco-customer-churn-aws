@@ -1,8 +1,8 @@
 # SageMaker prebuilt XGBoost image
 data "aws_sagemaker_prebuilt_ecr_image" "xgboost" {
   region = var.default_region
-  repository_name = "xgboost"
-  image_tag = "latest"
+  repository_name = "sagemaker-xgboost"
+  image_tag = "1.7-1"
 }
 
 # Create IAM role for SageMaker
@@ -49,7 +49,7 @@ resource "aws_sagemaker_model" "xgboost_model" {
   execution_role_arn = aws_iam_role.sagemaker_execution_role.arn
 
   primary_container {
-    image = data.aws_sagemaker_prebuilt_ecr_image.xgboost.image_uri
+    image = data.aws_sagemaker_prebuilt_ecr_image.xgboost.registry_path
     model_data_url = var.model_data_uri
   }
 }
@@ -60,7 +60,7 @@ resource "aws_sagemaker_endpoint_configuration" "xgboost_endpoint_config" {
 
     production_variants {
       variant_name = "AllTrafic"
-      model_name = aws_sagemaker_model.xgboost_model
+      model_name = aws_sagemaker_model.xgboost_model.name
       initial_instance_count = 1
       instance_type = "ml.m5.large"
     }
