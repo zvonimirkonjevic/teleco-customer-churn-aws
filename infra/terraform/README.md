@@ -6,8 +6,9 @@ Terraform configuration for the Telco Churn platform.
 
 | File | Purpose |
 |---|---|
-| `main.tf` | Core resource definitions — all AWS resources (SageMaker, Lambda, API Gateway, S3, IAM, EC2, CodeBuild, CodePipeline) |
-| `variables.tf` | Input variables with types, descriptions, and defaults (e.g., region, tags) |
-| `outputs.tf` | Output values exported after apply (API URL, EC2 public IP, S3 bucket names, etc.) |
-| `providers.tf` | AWS provider version constraints and region configuration |
+| `backend.tf` | Required providers (AWS ~> 5.0) and S3 remote state backend configuration |
+| `main.tf` | Core resource definitions — SageMaker (model, endpoint config, endpoint) and IAM roles |
+| `variables.tf` | Input variables (`default_region`, `model_data_uri`) |
+| `outputs.tf` | Output values exported after apply (currently empty — will be populated as resources grow) |
+| `providers.tf` | AWS provider alias and region configuration |
 | `terraform.tfvars` | Concrete variable values for this deployment |
