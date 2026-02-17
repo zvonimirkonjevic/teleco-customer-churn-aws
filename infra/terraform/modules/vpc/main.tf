@@ -7,3 +7,17 @@ resource "aws_vpc" "teleco-customer-churn-vpc" {
         Name = "${var.name}-vpc"
     }
 }
+
+resource "aws_subnet" "teleco-customer-churn-public-subnet" {
+    vpc_id = aws_vpc.teleco-customer-churn-vpc.id
+    cidr_block = var.public_subnet_cidr_block
+}
+
+resource "aws_subnet" "teleco-customer-churn-private-subnet" {
+    vpc_id = aws_vpc.teleco-customer-churn-vpc.id
+    cidr_block = var.private_subnet_cidr_block
+}
+
+resource "aws_internet_gateway" "teleco-customer-churn-internet-gateway" {
+    vpc_id = aws_vpc.teleco-customer-churn-vpc.id
+}
