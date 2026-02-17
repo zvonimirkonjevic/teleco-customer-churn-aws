@@ -1,3 +1,9 @@
+variable "availability_zones" {
+    description = "A list of availability zones to use for the subnets."
+    type        = list(string)
+  
+}
+
 variable "cidr_block" {
     description = "The CIDR block for the VPC."
     type        = string
