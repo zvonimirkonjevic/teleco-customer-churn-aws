@@ -52,3 +52,40 @@ resource "aws_route_table_association" "teleco-customer-churn-public-route-table
     subnet_id = aws_subnet.teleco-customer-churn-public-subnet[count.index].id
     route_table_id = aws_route_table.teleco-customer-churn-public-route-table[count.index].id
 }
+
+resource "aws_eip" "teleco-customer-churn-eip" {
+    count = length(var.availability_zones)
+    domain = "vpc"
+    depends_on = [ aws_internet_gateway.teleco-customer-churn-internet-gateway ]
+    tags = {
+        Name = "${var.name}-eip-${count.index + 1}"
+    }
+}
+
+resource "aws_nat_gateway" "teleco-customer-churn-nat-gateway" {
+    count = length(var.availability_zones)
+    subnet_id = aws_subnet.teleco-customer-churn-public-subnet[count.index].id
+    allocation_id = aws_eip.teleco-customer-churn-eip[count.index].id
+    depends_on = [ aws_internet_gateway.teleco-customer-churn-internet-gateway ]
+    tags = {
+        Name = "${var.name}-nat-gateway-${count.index + 1}"
+    }
+}
+
+resource "aws_route_table" "teleco-customer-churn-private-route-table" {
+    count = length(var.availability_zones)
+    vpc_id = aws_vpc.teleco-customer-churn-vpc.id
+    route = {
+        cidr_block = var.private_route_table_cidr_block
+        nat_gateway_id = aws_nat_gateway.teleco-customer-churn-nat-gateway[count.index].id
+    }
+    tags = {
+        Name = "${var.name}-private-rt-${count.index + 1}"
+    }
+}
+
+resource "aws_route_table_association" "teleco-customer-churn-private-route-table-association" {
+    count = length(var.availability_zones)
+    subnet_id = aws_subnet.teleco-customer-churn-private-subnet[count.index].id
+    route_table_id = aws_route_table.teleco-customer-churn-private-route-table[count.index].id
+}
