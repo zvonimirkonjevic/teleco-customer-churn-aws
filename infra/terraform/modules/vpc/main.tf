@@ -38,7 +38,7 @@ resource "aws_internet_gateway" "teleco-customer-churn-internet-gateway" {
 resource "aws_route_table" "teleco-customer-churn-public-route-table" {
     count = length(var.availability_zones)
     vpc_id = aws_vpc.teleco-customer-churn-vpc.id
-    route = {
+    route {
         cidr_block = var.public_route_table_cidr_block
         gateway_id = aws_internet_gateway.teleco-customer-churn-internet-gateway.id
     }
@@ -75,7 +75,7 @@ resource "aws_nat_gateway" "teleco-customer-churn-nat-gateway" {
 resource "aws_route_table" "teleco-customer-churn-private-route-table" {
     count = length(var.availability_zones)
     vpc_id = aws_vpc.teleco-customer-churn-vpc.id
-    route = {
+    route {
         cidr_block = var.private_route_table_cidr_block
         nat_gateway_id = aws_nat_gateway.teleco-customer-churn-nat-gateway[count.index].id
     }
