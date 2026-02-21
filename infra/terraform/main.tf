@@ -12,6 +12,7 @@ module "vpc" {
     public_subnet_cidr_block = var.public_subnet_cidr_block
     private_subnet_cidr_block = var.private_subnet_cidr_block
     public_route_table_cidr_block = var.public_route_table_cidr_block
+    private_route_table_cidr_block = var.private_route_table_cidr_block
 }
 
 module "sagemaker-serverless-endpoint" {
