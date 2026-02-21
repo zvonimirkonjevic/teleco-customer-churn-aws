@@ -85,3 +85,20 @@ variable "alb_sg_ingress_cidr_blocks" {
   description = "CIDR blocks for ALB security group ingress rule"
   type = list(string)
 }
+
+# ECS Task Security group configuration variables
+variable "ecs_task_sg_name" {
+  description = "Name of the ECS task security group"
+  type = string
+}
+
+variable "ecs_task_sg_ingress_protocol" {
+  description = "Protocol for ECS task security group ingress rule"
+  type = string
+}
+
+variable "container_port" {
+  description = "Port the container listens on"
+  type = number
+  default = 5000
+}

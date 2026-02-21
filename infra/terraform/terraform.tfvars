@@ -20,3 +20,8 @@ alb_sg_ingress_from_port = 80
 alb_sg_ingress_to_port = 80
 alb_sg_ingress_protocol = "tcp"
 alb_sg_ingress_cidr_blocks = ["0.0.0.0/0"]
+
+# ECS Task SG configuration variables
+ecs_task_sg_name = "teleco-customer-churn-ecs-task-sg"
+ecs_task_sg_ingress_protocol = "tcp"
+container_port = 80
