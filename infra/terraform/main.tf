@@ -66,3 +66,57 @@ module "ecs-task-security-group" {
 
     # Default egress is already set to allow all outbound traffic
 }
+
+module "ecs_task_and_execution_roles" {
+  source                   = "./modules/iam"
+  name_prefix              = "${var.name_prefix}-ecs-task-execution-role"
+  s3_bucket_name = var.s3_bucket_name
+  attach_cloudwatch_policy = true
+  attach_ssm_policy        = false
+  create_custom_task_policy = true
+  
+  # Add custom policy for execution role
+  create_custom_execution_policy = true
+  custom_execution_policy_json = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
+        ],
+        Effect   = "Allow",
+        Resource = "*"
+      },
+      {
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ],
+        Effect   = "Allow",
+        Resource = "*"
+      }
+    ]
+  })
+
+  custom_task_policy_json = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ],
+        Effect   = "Allow",
+        Resource = [
+          "arn:aws:s3:::${var.s3_bucket_name}",
+          "arn:aws:s3:::${var.s3_bucket_name}/*"
+        ]
+      }
+    ]
+  })
+}
