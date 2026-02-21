@@ -99,55 +99,16 @@ resource "aws_iam_role" "ecs_task_role" {
 }
 
 # Custom policies for task and execution roles
-module "ecs_task_and_execution_roles" {
-  source                   = "./modules/iam"
-  name_prefix              = "${var.name_prefix}-ecs-task-execution-role"
-  attach_cloudwatch_policy = true
-  attach_ssm_policy        = false
-  create_custom_task_policy = true
-  
-  # Add custom policy for execution role
-  create_custom_execution_policy = true
-  custom_execution_policy_json = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:DescribeLogStreams"
-        ],
-        Effect   = "Allow",
-        Resource = "*"
-      },
-      {
-        Action = [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage"
-        ],
-        Effect   = "Allow",
-        Resource = "*"
-      }
-    ]
-  })
+resource "aws_iam_role_policy" "custom_task_access" {
+  count  = var.create_custom_task_policy ? 1 : 0
+  name   = "${var.name_prefix}-custom-task-policy"
+  role   = aws_iam_role.ecs_task_role.name
+  policy = var.custom_task_policy_json
+}
 
-  custom_task_policy_json = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
-        ],
-        Effect   = "Allow",
-        Resource = [
-          "arn:aws:s3:::${var.s3_bucket_name}",
-          "arn:aws:s3:::${var.s3_bucket_name}/*"
-        ]
-      }
-    ]
-  })
+resource "aws_iam_role_policy" "custom_execution_access" {
+  count  = var.create_custom_execution_policy ? 1 : 0
+  name   = "${var.name_prefix}-custom-execution-policy"
+  role   = aws_iam_role.ecs_execution.name
+  policy = var.custom_execution_policy_json
 }
