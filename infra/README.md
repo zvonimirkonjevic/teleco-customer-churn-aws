@@ -16,6 +16,9 @@ infra/
     └── modules/
         ├── iam/
         │   └── main.tf                     # SageMaker execution role + S3 read policy
+        ├── vpc/
+        │   ├── main.tf                     # VPC, subnets, IGW, NAT gateways, route tables
+        │   └── variables.tf                # CIDR blocks, AZs, naming
         └── sagemaker-endpoint/
             ├── main.tf                     # Model, endpoint config, real-time endpoint
             └── variables.tf                # default_region, model_data_uri
@@ -32,6 +35,15 @@ infra/
 | `sagemaker-endpoint` | Model | `aws_sagemaker_model` | Artifact from S3 (`model.tar.gz`) |
 | `sagemaker-endpoint` | Endpoint config | `aws_sagemaker_endpoint_configuration` | `ml.m5.large` × 1, single variant |
 | `sagemaker-endpoint` | Endpoint | `aws_sagemaker_endpoint` | Real-time inference |
+| `vpc` | VPC | `aws_vpc` | DNS support & hostnames enabled |
+| `vpc` | Public subnets | `aws_subnet` | One per AZ |
+| `vpc` | Private subnets | `aws_subnet` | One per AZ |
+| `vpc` | Internet gateway | `aws_internet_gateway` | Attached to VPC |
+| `vpc` | Elastic IPs | `aws_eip` | One per AZ, for NAT gateways |
+| `vpc` | NAT gateways | `aws_nat_gateway` | One per AZ in public subnets, enables private subnet outbound internet |
+| `vpc` | Public route tables | `aws_route_table` | Routes to internet gateway |
+| `vpc` | Private route tables | `aws_route_table` | Routes to NAT gateway |
+| `vpc` | Route table associations | `aws_route_table_association` | Links subnets to route tables |
 
 ## State Management
 
@@ -47,11 +59,12 @@ infra/
 
 | Decision | Rationale |
 |---|---|
-| **Modular layout** | Resources split into `iam/` and `sagemaker-endpoint/` modules for separation of concerns |
+| **Modular layout** | Resources split into `iam/`, `vpc/`, and `sagemaker-endpoint/` modules for separation of concerns |
 | **Single environment** | No multi-env (dev/staging/prod) overhead — single flat root |
 | **S3 remote state** | Encrypted, durable state storage; no DynamoDB lock table (single developer) |
 | **Named AWS profile** | Credential isolation via dedicated `teleco-churn-terraform` profile |
 | **Prebuilt SageMaker image** | Uses AWS-managed XGBoost container (`1.7-1`) — no custom Docker build required |
+| **NAT gateway per AZ** | Each private subnet gets its own NAT gateway for outbound internet — avoids single-AZ bottleneck |
 
 ## Usage
 

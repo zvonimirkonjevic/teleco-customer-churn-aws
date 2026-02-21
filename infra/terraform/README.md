@@ -14,6 +14,9 @@ terraform/
 └── modules/
     ├── iam/
     │   └── main.tf                     # SageMaker execution role + inline S3 read policy
+    ├── vpc/
+    │   ├── main.tf                     # VPC, subnets, IGW, NAT gateways, route tables
+    │   └── variables.tf                # CIDR blocks, AZs, naming
     └── sagemaker-endpoint/
         ├── main.tf                     # Model, endpoint config, endpoint resources
         └── variables.tf                # default_region, model_data_uri
@@ -42,6 +45,34 @@ Creates the SageMaker execution role with two attached policies:
 | `sagemaker_execution_role` | `aws_iam_role` | Trust policy: `sagemaker.amazonaws.com` |
 | `sagemaker_full_access` | `aws_iam_role_policy_attachment` | `AmazonSageMakerFullAccess` managed policy |
 | `s3_access` | `aws_iam_role_policy` | Inline — `s3:GetObject`, `s3:ListBucket` scoped to `zvonimir-teleco-customer-churn` bucket |
+
+### `modules/vpc`
+
+Provisions the network layer: VPC, subnets, internet gateway, NAT gateways, and route tables. Private subnets reach the internet via NAT gateways placed in public subnets.
+
+| Resource | Type | Detail |
+|---|---|---|
+| `teleco-customer-churn-vpc` | `aws_vpc` | DNS support & hostnames enabled |
+| `teleco-customer-churn-public-subnet` | `aws_subnet` | One per AZ |
+| `teleco-customer-churn-private-subnet` | `aws_subnet` | One per AZ |
+| `teleco-customer-churn-internet-gateway` | `aws_internet_gateway` | Attached to VPC |
+| `teleco-customer-churn-eip` | `aws_eip` | One per AZ, allocated for NAT gateways |
+| `teleco-customer-churn-nat-gateway` | `aws_nat_gateway` | One per AZ in public subnets, enables private subnet outbound internet |
+| `teleco-customer-churn-public-route-table` | `aws_route_table` | Routes `0.0.0.0/0` to internet gateway |
+| `teleco-customer-churn-private-route-table` | `aws_route_table` | Routes `0.0.0.0/0` to NAT gateway |
+
+**Variables:**
+
+| Name | Type | Description |
+|---|---|---|
+| `availability_zones` | `list(string)` | Availability zones for subnet placement |
+| `cidr_block` | `string` | VPC CIDR block |
+| `instance_tenancy` | `string` | Instance tenancy (default: `default`) |
+| `name` | `string` | Resource name prefix |
+| `public_subnet_cidr_block` | `string` | CIDR block for public subnets |
+| `private_subnet_cidr_block` | `string` | CIDR block for private subnets |
+| `public_route_table_cidr_block` | `string` | CIDR block for public route table |
+| `private_route_table_cidr_block` | `string` | CIDR block for private route table |
 
 ### `modules/sagemaker-endpoint`
 

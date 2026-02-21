@@ -30,7 +30,7 @@ The Lambda proxy pattern decouples clients from SigV4 signing — clients hit a 
 | **Data Processing** | pandas, NumPy, scikit-learn | Feature engineering, StandardScaler, one-hot/binary encoding → 46 features |
 | **Class Balancing** | SMOTE (imbalanced-learn) | Oversampled minority class: 1,869 → 4,139 synthetic samples |
 | **Visualization** | Matplotlib, Seaborn | EDA charts, correlation matrix, customer segmentation |
-| **IaC** | Terraform (~> 5.0) | Modular layout: `modules/iam`, `modules/sagemaker-endpoint`; S3 remote state |
+| **IaC** | Terraform (~> 5.0) | Modular layout: `modules/iam`, `modules/vpc`, `modules/sagemaker-endpoint`; S3 remote state |
 | **Inference** | SageMaker Endpoint | Real-time, `ml.m5.large` × 1 instance, single `AllTraffic` variant |
 | **API** | API Gateway + Lambda | Lambda proxy handles SigV4 signing; public REST endpoint |
 | **Front-end** | Streamlit 1.54+ | Two-column form, `requests`-based API client, risk-level display |
@@ -93,6 +93,7 @@ Modular Terraform configuration in `infra/terraform/`. See [infra/README.md](inf
 | Module | Resources |
 |---|---|
 | `modules/iam` | SageMaker execution role, `AmazonSageMakerFullAccess` attachment, inline S3 read policy |
+| `modules/vpc` | VPC, public/private subnets, internet gateway, NAT gateways (one per AZ), public/private route tables |
 | `modules/sagemaker-endpoint` | Prebuilt XGBoost ECR image lookup, `aws_sagemaker_model`, endpoint config (`ml.m5.large` × 1), real-time endpoint |
 
 **State:** S3 backend (`teleco-churn-terraform-state`), encrypted, `eu-central-1`, profile `teleco-churn-terraform`.
@@ -176,12 +177,15 @@ teleco-customer-churn-aws/
 ├── infra/                                  # Terraform IaC
 │   └── terraform/
 │       ├── backend.tf                      #   required_providers, S3 remote state
-│       ├── main.tf                         #   Root module (empty — delegates to modules)
-│       ├── variables.tf                    #   Root variables (empty)
+│       ├── main.tf                         #   Root module — delegates to modules
+│       ├── variables.tf                    #   Root variables
 │       ├── providers.tf                    #   AWS provider: eu-central-1
 │       ├── terraform.tfvars                #   default_region, model_data_uri
 │       └── modules/
 │           ├── iam/main.tf                 #   SageMaker execution role + S3 policy
+│           ├── vpc/                        #   VPC, subnets, IGW, NAT gateways, route tables
+│           │   ├── main.tf
+│           │   └── variables.tf
 │           └── sagemaker-endpoint/         #   Model, endpoint config, endpoint
 │               ├── main.tf
 │               └── variables.tf
