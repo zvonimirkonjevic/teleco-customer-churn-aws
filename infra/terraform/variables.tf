@@ -55,3 +55,8 @@ variable "public_route_table_cidr_block" {
   description = "CIDR block for public route table"
   type = string
 }
+
+variable "private_route_table_cidr_block" {
+  description = "CIDR block for private route table"
+  type = string
+}

@@ -12,3 +12,4 @@ availability_zones = ["eu-central-1a", "eu-central-1b"]
 public_subnet_cidr_block = "10.0.1.0/24"
 private_subnet_cidr_block = "10.0.2.0/24"
 public_route_table_cidr_block = "0.0.0.0/0"
+private_route_table_cidr_block = "0.0.0.0/0"
