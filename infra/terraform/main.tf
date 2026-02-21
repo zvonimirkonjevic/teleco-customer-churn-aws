@@ -1,4 +1,4 @@
-module "iam" {
+module "sagemaker_execution_role" {
     source = "./modules/iam"
 
     name_prefix    = var.name_prefix
@@ -22,7 +22,7 @@ module "sagemaker_serverless_endpoint" {
     source = "./modules/sagemaker-endpoint"
     
     default_region = var.sagemaker_endpoint_default_region
-    iam_role_arn = module.iam.sagemaker_execution_role_iam_arn
+    iam_role_arn = module.sagemaker_execution_role.sagemaker_execution_role_iam_arn
     model_data_uri = var.sagemaker_model_data_uri
     max_concurrency = var.sagemaker_max_concurrency
     memory_size_in_mb = var.sagemaker_memory_size_in_mb
@@ -47,7 +47,7 @@ module "alb_sg" {
     # Default egress is already set to allow all outbound traffic
 }
 
-module "ecs-task-security-group" {
+module "ecs_sg" {
     source = "./modules/security-group"
 
     name = var.ecs_task_sg_name
@@ -69,7 +69,7 @@ module "ecs-task-security-group" {
 
 module "ecs_task_and_execution_roles" {
   source                   = "./modules/iam"
-  name_prefix              = "${var.name_prefix}-ecs-task-execution-role"
+  name_prefix              = var.name_prefix
   s3_bucket_name = var.s3_bucket_name
   attach_cloudwatch_policy = true
   attach_ssm_policy        = false
@@ -121,12 +121,67 @@ module "ecs_task_and_execution_roles" {
   })
 }
 
-module "ecs_cluster" {
-    source = "./modules/ecs"
+module "ecs" {
+  source      = "./modules/ecs"
+  name_prefix = var.name_prefix
+  environment = "dev"
 
-    name_prefix = var.name_prefix
-    environment = "dev"
-    enable_container_insights = var.enable_container_insights
-    capacity_providers = var.capacity_providers
-    default_capacity_provider_strategy = var.default_capacity_provider_strategy
+  enable_container_insights = true
+
+  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
+
+  default_capacity_provider_strategy = [
+    {
+      capacity_provider = "FARGATE"
+      weight            = 1
+      base              = 1
+    }
+  ]
+}
+
+module "ecs_task_definition" {
+  source             = "./modules/ecs-task-definition"
+
+  family_name        = var.container_name
+  cpu                = var.container_cpu
+  memory             = var.container_memory
+  container_cpu      = var.container_cpu
+  container_memory   = var.container_memory
+  container_name     = var.container_name
+  image              = var.container_image
+  container_port     = var.container_port
+  region             = var.region
+
+  execution_role_arn = module.ecs_task_and_execution_roles.ecs_execution_role_arn
+  task_role_arn      = module.ecs_task_and_execution_roles.ecs_task_role_arn
+}
+
+module "ecs_service" {
+  source                         = "./modules/ecs-service"
+
+  name_prefix                    = var.name_prefix
+  cluster_id                     = module.ecs.cluster_id
+  task_definition_arn           = module.ecs_task_definition.task_definition_arn
+  desired_count                 = var.desired_count
+  target_group_arn              = module.alb.target_group_arn
+  container_name                = var.container_name
+  container_port                = var.container_port
+
+  force_new_deployment              = true
+  health_check_grace_period_seconds = 60
+
+  private_subnet_ids            = module.vpc.private_subnet_ids
+  security_group_ids            = [module.ecs_sg.security_group_id]
+  environment                   = var.environment
+}
+
+module "alb" {
+  source = "./modules/alb"
+
+  name_prefix = var.name_prefix
+  vpc_id = module.vpc.vpc_id
+  public_subnet_ids = module.vpc.public_subnet_ids
+  security_group_ids = [module.alb_sg.security_group_id]
+  target_port = var.container_port
+  environment = var.environment
 }
