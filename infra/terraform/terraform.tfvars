@@ -13,3 +13,10 @@ public_subnet_cidr_block = "10.0.1.0/24"
 private_subnet_cidr_block = "10.0.2.0/24"
 public_route_table_cidr_block = "0.0.0.0/0"
 private_route_table_cidr_block = "0.0.0.0/0"
+
+# ALB SG configuration variables
+alb_sg_name = "teleco-customer-churn-alb-sg"
+alb_sg_ingress_from_port = 80
+alb_sg_ingress_to_port = 80
+alb_sg_ingress_protocol = "tcp"
+alb_sg_ingress_cidr_blocks = ["0.0.0.0/0"]

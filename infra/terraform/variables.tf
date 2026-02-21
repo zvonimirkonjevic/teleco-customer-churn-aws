@@ -20,7 +20,6 @@ variable "sagemaker_memory_size_in_mb" {
 }
 
 # VPC configuration variables
-
 variable "vpc_name" {
   description = "Name of the VPC"
   type = string
@@ -59,4 +58,30 @@ variable "public_route_table_cidr_block" {
 variable "private_route_table_cidr_block" {
   description = "CIDR block for private route table"
   type = string
+}
+
+# ALB Security group configuration variables
+variable "alb_sg_name" {
+  description = "Name of the ALB security group"
+  type = string
+}
+
+variable "alb_sg_ingress_from_port" {
+  description = "Starting port for ALB security group ingress rule"
+  type = number
+}
+
+variable "alb_sg_ingress_to_port" {
+  description = "Ending port for ALB security group ingress rule"
+  type = number
+}
+
+variable "alb_sg_ingress_protocol" {
+  description = "Protocol for ALB security group ingress rule"
+  type = string
+}
+
+variable "alb_sg_ingress_cidr_blocks" {
+  description = "CIDR blocks for ALB security group ingress rule"
+  type = list(string)
 }
