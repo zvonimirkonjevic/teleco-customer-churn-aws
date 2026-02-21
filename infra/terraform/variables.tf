@@ -113,3 +113,33 @@ variable "container_port" {
   type = number
   default = 5000
 }
+
+# ECS Cluster configuration variables
+variable "enable_container_insights" {
+  description = "Whether to enable Container Insights for the ECS cluster"
+  type = bool
+  default = true
+}
+
+variable "capacity_providers" {
+  description = "List of capacity providers for the ECS cluster"
+  type = list(string)
+  default = ["FARGATE", "FARGATE_SPOT"] 
+}
+
+variable "default_capacity_provider_strategy" {
+  description = "Default capacity provider strategy for the ECS cluster"
+  type = list(object({
+    capacity_provider = string
+    weight            = number
+    base              = number
+  }))
+  
+  default = [
+    {
+      capacity_provider = "FARGATE"
+      weight            = 1
+      base              = 1
+    }
+  ]
+}
