@@ -15,7 +15,7 @@ module "vpc" {
     private_route_table_cidr_block = var.private_route_table_cidr_block
 }
 
-module "sagemaker-serverless-endpoint" {
+module "sagemaker_serverless_endpoint" {
     source = "./modules/sagemaker-endpoint"
     
     default_region = var.sagemaker_endpoint_default_region
@@ -25,7 +25,7 @@ module "sagemaker-serverless-endpoint" {
     memory_size_in_mb = var.sagemaker_memory_size_in_mb
 }
 
-module "alb-security-group" {
+module "alb_sg" {
     source = "./modules/security-group"
 
     name = var.alb_sg_name
@@ -40,4 +40,26 @@ module "alb-security-group" {
             cidr_blocks = var.alb_sg_ingress_cidr_blocks
         }
     ]
+
+    # Default egress is already set to allow all outbound traffic
+}
+
+module "ecs-task-security-group" {
+    source = "./modules/security-group"
+
+    name = var.ecs_task_sg_name
+    vpc_id = module.vpc.vpc_id
+    vpc_cidr_block = var.vpc_cidr_block
+
+    ingress_rules = [
+        {
+            from_port = var.container_port
+            to_port = var.container_port
+            protocol = var.ecs_task_sg_ingress_protocol
+            cidr_blocks = []
+            security_groups = [module.alb_sg.security_group_id]
+        }
+    ]
+
+    # Default egress is already set to allow all outbound traffic
 }
