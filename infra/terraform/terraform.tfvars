@@ -29,3 +29,14 @@ alb_sg_ingress_cidr_blocks = ["0.0.0.0/0"]
 ecs_task_sg_name = "teleco-customer-churn-ecs-task-sg"
 ecs_task_sg_ingress_protocol = "tcp"
 container_port = 80
+
+# ECS Task Definition configuration variables
+container_name   = "teleco-customer-churn"
+container_cpu    = 256
+container_memory = 512
+container_image  = "PLACEHOLDER_IMAGE_URI"
+region           = "eu-central-1"
+
+# ECS Service configuration variables
+desired_count    = 1
+environment      = "dev"
