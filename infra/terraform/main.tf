@@ -120,3 +120,13 @@ module "ecs_task_and_execution_roles" {
     ]
   })
 }
+
+module "ecs_cluster" {
+    source = "./modules/ecs"
+
+    name_prefix = var.name_prefix
+    environment = "dev"
+    enable_container_insights = var.enable_container_insights
+    capacity_providers = var.capacity_providers
+    default_capacity_provider_strategy = var.default_capacity_provider_strategy
+}
