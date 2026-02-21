@@ -16,6 +16,7 @@ variable "security_group_ids" {
 variable "target_port" {
     description = "Port on which the target group will receive traffic"
     type        = number
+    default     = 80
 }
 
 variable "vpc_id" {
@@ -26,4 +27,5 @@ variable "vpc_id" {
 variable "environment" {
     description = "Environment tag for the resources (e.g., dev, staging, prod)"
     type        = string
+    default     = "dev"
 }
