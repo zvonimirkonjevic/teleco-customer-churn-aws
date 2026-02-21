@@ -143,3 +143,42 @@ variable "default_capacity_provider_strategy" {
     }
   ]
 }
+
+# ECS Task Definition configuration variables
+variable "container_name" {
+  description = "Name of the container in the ECS task definition"
+  type = string
+}
+
+variable "container_cpu" {
+  description = "CPU units for the container in the ECS task definition"
+  type = number
+}
+
+variable "container_memory" {
+  description = "Memory in MiB for the container in the ECS task definition"
+  type = number
+}
+
+variable "container_image" {
+  description = "Docker image for the container in the ECS task definition"
+  type = string
+}
+
+variable "region" {
+  description = "AWS region where resources are deployed"
+  type = string
+}
+
+# ECS Service configuration variables
+variable "desired_count" {
+  description = "Desired number of tasks in the ECS service"
+  type = number
+  default = 1
+}
+
+variable "environment" {
+  description = "Environment name (e.g., dev, staging, prod)"
+  type = string
+  default = "dev"
+}
