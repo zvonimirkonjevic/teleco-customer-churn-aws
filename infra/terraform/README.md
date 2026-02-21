@@ -7,23 +7,43 @@ IaC root for the Telco Customer Churn platform. Uses a modular layout with S3-ba
 ```
 terraform/
 ├── backend.tf                          # required_providers + S3 remote state
-├── main.tf                             # Root module (currently empty — all resources in modules)
-├── variables.tf                        # Root-level variables (currently empty)
+├── main.tf                             # Root module — orchestrates all modules
+├── variables.tf                        # Root-level variables
 ├── providers.tf                        # AWS provider alias (eu-central, profile: teleco-churn-terraform)
 ├── terraform.tfvars                    # Variable values for this deployment
 └── modules/
-    ├── iam/
-    │   └── main.tf                     # SageMaker execution role + inline S3 read policy
-    ├── vpc/
-    │   ├── main.tf                     # VPC, subnets, IGW, NAT gateways, route tables
-    │   └── variables.tf                # CIDR blocks, AZs, naming
-    ├── security-group/
-    │   ├── main.tf                     # Security group with dynamic ingress/egress rules
-    │   ├── variables.tf                # Name, VPC ID, rule definitions
-    │   └── outputs.tf                  # security_group_id
-    └── sagemaker-endpoint/
-        ├── main.tf                     # Model, endpoint config, endpoint resources
-        └── variables.tf                # default_region, model_data_uri
+    ├── iam/                            # SageMaker + ECS IAM roles and policies
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── vpc/                            # VPC, subnets, IGW, NAT gateways, route tables
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── security-group/                 # Security group with dynamic ingress/egress rules
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── sagemaker-endpoint/             # Model, serverless endpoint config, endpoint
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── alb/                            # Application Load Balancer, target group, listener
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── ecs/                            # ECS cluster, capacity providers
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── ecs-task-definition/            # Fargate task definition, container config, logs
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    └── ecs-service/                    # ECS service, ALB integration, circuit breaker
+        ├── main.tf
+        ├── variables.tf
+        └── outputs.tf
 ```
 
 ## Backend
@@ -42,13 +62,43 @@ terraform/
 
 ### `modules/iam`
 
-Creates the SageMaker execution role with two attached policies:
+Creates IAM roles for SageMaker and ECS with configurable policy attachments.
 
 | Resource | Type | Detail |
 |---|---|---|
 | `sagemaker_execution_role` | `aws_iam_role` | Trust policy: `sagemaker.amazonaws.com` |
 | `sagemaker_full_access` | `aws_iam_role_policy_attachment` | `AmazonSageMakerFullAccess` managed policy |
-| `s3_access` | `aws_iam_role_policy` | Inline — `s3:GetObject`, `s3:ListBucket` scoped to `zvonimir-teleco-customer-churn` bucket |
+| `s3_access` | `aws_iam_role_policy` | Inline — `s3:GetObject`, `s3:ListBucket` scoped to data bucket |
+| `ecs_execution` | `aws_iam_role` | Trust policy: `ecs-tasks.amazonaws.com` |
+| `ecs_execution_policy` | `aws_iam_role_policy_attachment` | `AmazonECSTaskExecutionRolePolicy` managed policy |
+| `logs_policy` | `aws_iam_role_policy_attachment` | `CloudWatchLogsFullAccess` (conditional) |
+| `ssm_policy` | `aws_iam_role_policy_attachment` | `AmazonSSMReadOnlyAccess` (conditional) |
+| `ecs_task_role` | `aws_iam_role` | Trust policy: `ecs-tasks.amazonaws.com` |
+| `custom_task_access` | `aws_iam_role_policy` | Custom inline policy for task role (conditional) |
+| `custom_execution_access` | `aws_iam_role_policy` | Custom inline policy for execution role (conditional) |
+
+**Variables:**
+
+| Name | Type | Description |
+|---|---|---|
+| `name_prefix` | `string` | Prefix for role naming |
+| `s3_bucket_name` | `string` | S3 bucket for SageMaker access |
+| `attach_cloudwatch_policy` | `bool` | Attach CloudWatchLogsFullAccess (default: `false`) |
+| `attach_ssm_policy` | `bool` | Attach AmazonSSMReadOnlyAccess (default: `false`) |
+| `create_custom_task_policy` | `bool` | Create custom task role policy (default: `false`) |
+| `custom_task_policy_json` | `string` | Custom task role policy JSON (default: `""`) |
+| `create_custom_execution_policy` | `bool` | Create custom execution role policy (default: `false`) |
+| `custom_execution_policy_json` | `string` | Custom execution role policy JSON (default: `""`) |
+
+**Outputs:**
+
+| Name | Description |
+|---|---|
+| `sagemaker_execution_role_iam_arn` | ARN of the SageMaker execution role |
+| `ecs_execution_role_arn` | ARN of the ECS execution role |
+| `ecs_task_role_arn` | ARN of the ECS task role |
+| `ecs_execution_role_name` | Name of the ECS execution role |
+| `ecs_task_role_name` | Name of the ECS task role |
 
 ### `modules/vpc`
 
@@ -78,6 +128,15 @@ Provisions the network layer: VPC, subnets, internet gateway, NAT gateways, and 
 | `public_route_table_cidr_block` | `string` | CIDR block for public route table |
 | `private_route_table_cidr_block` | `string` | CIDR block for private route table |
 
+**Outputs:**
+
+| Name | Description |
+|---|---|
+| `vpc_id` | VPC ID |
+| `public_subnet_ids` | List of public subnet IDs |
+| `private_subnet_ids` | List of private subnet IDs |
+| `internet_gateway_id` | Internet gateway ID |
+
 ### `modules/security-group`
 
 Reusable security group module with dynamic ingress and egress rules. Default egress allows all outbound traffic (`0.0.0.0/0`).
@@ -104,14 +163,14 @@ Reusable security group module with dynamic ingress and egress rules. Default eg
 
 ### `modules/sagemaker-endpoint`
 
-Provisions the real-time inference stack:
+Provisions the serverless inference stack:
 
 | Resource | Type | Detail |
 |---|---|---|
 | `xgboost` | `aws_sagemaker_prebuilt_ecr_image` (data) | `sagemaker-xgboost:1.7-1` container image |
 | `xgboost_model` | `aws_sagemaker_model` | Model artifact loaded from S3 (`model_data_uri`) |
-| `xgboost_endpoint_config` | `aws_sagemaker_endpoint_configuration` | Single `AllTraffic` variant, `ml.m5.large`, 1 instance |
-| `xgboost_endpoint` | `aws_sagemaker_endpoint` | Real-time endpoint: `teleco-customer-churn-xgboost-endpoint` |
+| `xgboost_endpoint_config` | `aws_sagemaker_endpoint_configuration` | Single `AllTraffic` variant, serverless config (`max_concurrency`, `memory_size_in_mb`) |
+| `xgboost_endpoint` | `aws_sagemaker_endpoint` | Serverless endpoint: `teleco-customer-churn-xgboost-endpoint` |
 
 **Variables:**
 
@@ -119,6 +178,134 @@ Provisions the real-time inference stack:
 |---|---|---|
 | `default_region` | `string` | AWS region for ECR image lookup |
 | `model_data_uri` | `string` | `s3://` URI to the trained XGBoost `model.tar.gz` |
+| `max_concurrency` | `number` | Maximum concurrent invocations for the serverless endpoint |
+| `memory_size_in_mb` | `number` | Memory size in MB for the serverless endpoint |
+| `iam_role_arn` | `string` | IAM role ARN for SageMaker execution |
+
+**Outputs:**
+
+| Name | Description |
+|---|---|
+| `sagemaker_endpoint_name` | Name of the SageMaker endpoint |
+
+### `modules/alb`
+
+Application Load Balancer with HTTP listener and IP-based target group.
+
+| Resource | Type | Detail |
+|---|---|---|
+| `teleco_customer_churn_alb` | `aws_lb` | Application type, public subnets, idle timeout 60s |
+| `teleco_customer_churn_target_group` | `aws_lb_target_group` | IP target type, HTTP health check (path: `/`, interval: 30s, healthy: 2, unhealthy: 3) |
+| `teleco_customer_churn_listener` | `aws_lb_listener` | Port 80 HTTP, forwards to target group |
+
+**Variables:**
+
+| Name | Type | Description |
+|---|---|---|
+| `name_prefix` | `string` | Prefix for naming resources |
+| `public_subnet_ids` | `list(string)` | Public subnets for ALB placement |
+| `security_group_ids` | `list(string)` | Security groups for ALB |
+| `target_port` | `number` | Target group port (default: `80`) |
+| `vpc_id` | `string` | VPC ID |
+| `environment` | `string` | Environment tag (default: `dev`) |
+
+**Outputs:**
+
+| Name | Description |
+|---|---|
+| `alb_dns_name` | DNS name of the ALB |
+| `target_group_arn` | ARN of the target group |
+
+### `modules/ecs`
+
+ECS cluster with Fargate capacity providers.
+
+| Resource | Type | Detail |
+|---|---|---|
+| `teleco_customer_churn_cluster` | `aws_ecs_cluster` | Container Insights toggle via variable |
+| `teleco_customer_churn_capacity_providers` | `aws_ecs_cluster_capacity_providers` | Dynamic capacity provider strategy (FARGATE, FARGATE_SPOT) |
+
+**Variables:**
+
+| Name | Type | Description |
+|---|---|---|
+| `name_prefix` | `string` | Prefix for naming ECS resources |
+| `environment` | `string` | Environment tag |
+| `enable_container_insights` | `bool` | Enable CloudWatch Container Insights (default: `false`) |
+| `capacity_providers` | `list(string)` | Capacity providers to associate with the cluster |
+| `default_capacity_provider_strategy` | `list(object)` | Default strategy: `capacity_provider`, `weight`, `base` |
+
+**Outputs:**
+
+| Name | Description |
+|---|---|
+| `cluster_id` | ID of the ECS cluster |
+
+### `modules/ecs-task-definition`
+
+Fargate task definition with container health check and CloudWatch Logs.
+
+| Resource | Type | Detail |
+|---|---|---|
+| `teleco-customer-churn-prediction` | `aws_ecs_task_definition` | Fargate, `awsvpc` network mode, health check (`curl` on container port), `awslogs` log driver |
+
+**Variables:**
+
+| Name | Type | Description |
+|---|---|---|
+| `family_name` | `string` | Task family name |
+| `cpu` | `number` | Task CPU units |
+| `memory` | `number` | Task memory in MiB |
+| `task_role_arn` | `string` | IAM task role ARN |
+| `execution_role_arn` | `string` | IAM execution role ARN |
+| `container_name` | `string` | Container name |
+| `image` | `string` | Docker image URI |
+| `container_cpu` | `number` | Container CPU units |
+| `container_memory` | `number` | Container memory in MiB |
+| `container_port` | `number` | Container port |
+| `region` | `string` | AWS region for CloudWatch Logs |
+
+**Outputs:**
+
+| Name | Description |
+|---|---|
+| `task_definition_arn` | Full ARN of the task definition |
+| `task_definition_family` | Task family name |
+| `revision` | Task definition revision number |
+
+### `modules/ecs-service`
+
+ECS service with ALB integration, private subnet placement, and deployment circuit breaker.
+
+| Resource | Type | Detail |
+|---|---|---|
+| `teleco-customer-churn-service` | `aws_ecs_service` | Fargate launch type, private subnets (no public IP), ALB target group, circuit breaker with rollback |
+
+**Variables:**
+
+| Name | Type | Description |
+|---|---|---|
+| `name_prefix` | `string` | Prefix for naming the service |
+| `cluster_id` | `string` | ECS cluster ID |
+| `task_definition_arn` | `string` | Task definition ARN |
+| `private_subnet_ids` | `list(string)` | Private subnets for task placement |
+| `security_group_ids` | `list(string)` | Security groups for tasks |
+| `target_group_arn` | `string` | ALB target group ARN |
+| `container_name` | `string` | Container name for load balancer |
+| `container_port` | `number` | Container port for load balancer |
+| `desired_count` | `number` | Desired number of tasks |
+| `force_new_deployment` | `bool` | Force new deployment (default: `false`) |
+| `health_check_grace_period_seconds` | `number` | Health check grace period (default: `60`) |
+| `environment` | `string` | Environment tag |
+
+**Outputs:**
+
+| Name | Description |
+|---|---|
+| `service_name` | Name of the ECS service |
+| `service_id` | ID of the ECS service |
+| `cluster_name` | Name of the ECS cluster |
+| `launch_type` | Launch type (FARGATE) |
 
 ## Usage
 

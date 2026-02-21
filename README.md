@@ -1,25 +1,25 @@
 # Telco Customer Churn Prediction
 
-End-to-end ML system for binary churn classification on telecommunications customer data. Trained on AWS SageMaker, served via a real-time endpoint behind API Gateway + Lambda, with a Streamlit front-end. Infrastructure managed with Terraform (modular layout, S3 remote state).
+End-to-end ML system for binary churn classification on telecommunications customer data. Trained on AWS SageMaker, served via a serverless endpoint behind an Application Load Balancer + ECS Fargate, with a Streamlit front-end. Infrastructure managed with Terraform (modular layout, S3 remote state).
 
 ## Architecture
 
 ```
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐      ┌──────────────────────┐
-│  Streamlit  │─────▶│ API Gateway  │─────▶│   Lambda    │─────▶│  SageMaker Endpoint  │
-│   (Client)  │ POST │  (REST API)  │      │   (Proxy)   │ IAM  │  XGBoost · ml.m5.lg  │
-└─────────────┘      └──────────────┘      └─────────────┘      └──────────────────────┘
-                                                                          │
-                                                                          ▼
-                                                                   ┌─────────────┐
-                                                                   │  S3 Bucket  │
-                                                                   │ model.tar.gz│
-                                                                   └─────────────┘
+┌─────────────┐      ┌─────────┐      ┌──────────────┐      ┌──────────────────────────┐
+│  Streamlit  │─────▶│   ALB   │─────▶│  ECS Fargate │─────▶│   SageMaker Endpoint     │
+│   (Client)  │ HTTP │ (HTTP)  │      │  (Streamlit) │ IAM  │  XGBoost · Serverless    │
+└─────────────┘      └─────────┘      └──────────────┘      └──────────────────────────┘
+                                              │                          │
+                                              ▼                          ▼
+                                      ┌──────────────┐          ┌─────────────┐
+                                      │  CloudWatch  │          │  S3 Bucket  │
+                                      │    Logs      │          │ model.tar.gz│
+                                      └──────────────┘          └─────────────┘
 ```
 
-**Request flow:** Client POSTs JSON → API Gateway → Lambda authenticates via IAM (SigV4) and forwards to SageMaker → XGBoost model returns churn probability → Lambda formats response → Client receives `{ churn_probability, will_churn }`.
+**Request flow:** Client sends HTTP request → ALB routes to ECS Fargate task running Streamlit → app invokes SageMaker endpoint via IAM → XGBoost model returns churn probability → Streamlit renders `{ churn_probability, will_churn }`.
 
-The Lambda proxy pattern decouples clients from SigV4 signing — clients hit a simple REST endpoint without AWS SDK dependencies.
+ECS Fargate hosts the Streamlit app in private subnets behind an ALB, with deployment circuit breaker and automatic rollback.
 
 ## Tech Stack
 
@@ -30,9 +30,10 @@ The Lambda proxy pattern decouples clients from SigV4 signing — clients hit a 
 | **Data Processing** | pandas, NumPy, scikit-learn | Feature engineering, StandardScaler, one-hot/binary encoding → 46 features |
 | **Class Balancing** | SMOTE (imbalanced-learn) | Oversampled minority class: 1,869 → 4,139 synthetic samples |
 | **Visualization** | Matplotlib, Seaborn | EDA charts, correlation matrix, customer segmentation |
-| **IaC** | Terraform (~> 5.0) | Modular layout: `modules/iam`, `modules/vpc`, `modules/security-group`, `modules/sagemaker-endpoint`; S3 remote state |
-| **Inference** | SageMaker Endpoint | Real-time, `ml.m5.large` × 1 instance, single `AllTraffic` variant |
-| **API** | API Gateway + Lambda | Lambda proxy handles SigV4 signing; public REST endpoint |
+| **IaC** | Terraform (~> 5.0) | Modular layout: `modules/iam`, `modules/vpc`, `modules/security-group`, `modules/sagemaker-endpoint`, `modules/alb`, `modules/ecs`, `modules/ecs-task-definition`, `modules/ecs-service`; S3 remote state |
+| **Inference** | SageMaker Endpoint | Serverless, `max_concurrency=1`, `memory=2048 MiB`, single `AllTraffic` variant |
+| **Container Orchestration** | ECS Fargate | Fargate + Fargate Spot capacity providers, deployment circuit breaker with rollback |
+| **Load Balancing** | Application Load Balancer | Public-facing HTTP listener, forwards to ECS tasks in private subnets |
 | **Front-end** | Streamlit 1.54+ | Two-column form, `requests`-based API client, risk-level display |
 | **Containerization** | Docker + docker-compose | Local dev: `python:3.12-slim`, `uv sync --frozen --only-group app` |
 | **Package Management** | uv + pyproject.toml | Lockfile-based (`uv.lock`), dependency groups (`app` for runtime-only) |
@@ -92,10 +93,14 @@ Modular Terraform configuration in `infra/terraform/`. See [infra/README.md](inf
 
 | Module | Resources |
 |---|---|
-| `modules/iam` | SageMaker execution role, `AmazonSageMakerFullAccess` attachment, inline S3 read policy |
+| `modules/iam` | SageMaker execution role, ECS execution role, ECS task role, conditional CloudWatch/SSM policies, custom inline policies |
 | `modules/vpc` | VPC, public/private subnets, internet gateway, NAT gateways (one per AZ), public/private route tables |
 | `modules/security-group` | Reusable security group with dynamic ingress/egress rules |
-| `modules/sagemaker-endpoint` | Prebuilt XGBoost ECR image lookup, `aws_sagemaker_model`, endpoint config (`ml.m5.large` × 1), real-time endpoint |
+| `modules/sagemaker-endpoint` | Prebuilt XGBoost ECR image lookup, `aws_sagemaker_model`, serverless endpoint config, inference endpoint |
+| `modules/alb` | Application Load Balancer, target group (IP-based, HTTP health check), HTTP listener |
+| `modules/ecs` | ECS cluster with Fargate + Fargate Spot capacity providers, Container Insights toggle |
+| `modules/ecs-task-definition` | Fargate task definition with container health check and CloudWatch Logs |
+| `modules/ecs-service` | ECS service with ALB integration, private subnet placement, deployment circuit breaker |
 
 **State:** S3 backend (`teleco-churn-terraform-state`), encrypted, `eu-central-1`, profile `teleco-churn-terraform`.
 
@@ -111,7 +116,7 @@ Modular Streamlit app in `app/`. See [app/README.md](app/README.md) for componen
 |---|---|
 | `app.py` | Entry point — page config, layout orchestration, error boundary |
 | `config.py` | Centralized settings: `API_ENDPOINT` (from `secrets.toml`), `CHURN_THRESHOLD`, model metadata |
-| `api_client.py` | `make_prediction(payload)` → POST to API Gateway, returns `{ churn_probability, will_churn }` |
+| `api_client.py` | `make_prediction(payload)` → POST to API, returns `{ churn_probability, will_churn }` |
 | `components.py` | Pure UI functions: `render_header`, `render_form` (14 input fields), `render_results`, `render_sidebar` |
 
 **API contract:** POST with JSON body containing 14 customer features → response: `{ churn_probability: float, will_churn: bool }`
@@ -131,7 +136,7 @@ uv sync && uv run streamlit run app/app.py
 
 | Requirement | Notes |
 |---|---|
-| AWS account | SageMaker, Lambda, API Gateway, S3, IAM access |
+| AWS account | SageMaker, ECS, ALB, S3, IAM, VPC access |
 | AWS CLI | Configured with `teleco-churn-terraform` profile for Terraform |
 | Python ≥ 3.12 | Enforced by `pyproject.toml` |
 | [uv](https://docs.astral.sh/uv/) | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
@@ -155,7 +160,7 @@ cd ../..
 
 # 4. Configure app secrets
 cp app/.streamlit/secrets.toml.example app/.streamlit/secrets.toml
-# Set API_ENDPOINT to your API Gateway invoke URL
+# Set API_ENDPOINT to your ALB DNS name or application URL
 
 # 5. Run application
 docker compose up -d          # or: uv run streamlit run app/app.py
@@ -169,7 +174,7 @@ teleco-customer-churn-aws/
 ├── app/                                    # Streamlit front-end
 │   ├── app.py                              #   Entry point (layout, error handling)
 │   ├── config.py                           #   Settings & secrets (API_ENDPOINT, thresholds)
-│   ├── api_client.py                       #   HTTP client → API Gateway
+│   ├── api_client.py                       #   HTTP client → API
 │   ├── components.py                       #   UI components (form, results, sidebar, styles)
 │   ├── .streamlit/                         #   config.toml + secrets.toml
 │   └── environment/
@@ -183,17 +188,38 @@ teleco-customer-churn-aws/
 │       ├── providers.tf                    #   AWS provider: eu-central-1
 │       ├── terraform.tfvars                #   default_region, model_data_uri
 │       └── modules/
-│           ├── iam/main.tf                 #   SageMaker execution role + S3 policy
+│           ├── iam/                        #   SageMaker + ECS execution/task roles + policies
+│           │   ├── main.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
 │           ├── vpc/                        #   VPC, subnets, IGW, NAT gateways, route tables
 │           │   ├── main.tf
-│           │   └── variables.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
 │           ├── security-group/             #   Reusable security group with dynamic rules
 │           │   ├── main.tf
 │           │   ├── variables.tf
 │           │   └── outputs.tf
-│           └── sagemaker-endpoint/         #   Model, endpoint config, endpoint
+│           ├── sagemaker-endpoint/         #   Model, serverless endpoint config, endpoint
+│           │   ├── main.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
+│           ├── alb/                        #   Application Load Balancer, target group, listener
+│           │   ├── main.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
+│           ├── ecs/                        #   ECS cluster, capacity providers
+│           │   ├── main.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
+│           ├── ecs-task-definition/        #   Fargate task definition, container config, logs
+│           │   ├── main.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
+│           └── ecs-service/                #   ECS service, ALB integration, circuit breaker
 │               ├── main.tf
-│               └── variables.tf
+│               ├── variables.tf
+│               └── outputs.tf
 │
 ├── data/
 │   ├── raw/teleco-customer-churn.csv       # Original dataset (7,043 records)
@@ -225,9 +251,9 @@ teleco-customer-churn-aws/
 
 | Area | Decision | Rationale |
 |---|---|---|
-| Model serving | Real-time endpoint (`ml.m5.large`) | Sub-second latency for interactive app; serverless inference not available for XGBoost 1.7 |
-| API auth | Lambda proxy pattern | Decouples client from SigV4 signing; simplifies front-end integration |
-| IaC | Terraform modules (not flat) | Separates IAM from SageMaker concerns; cleaner diffs and code review |
+| Model serving | Serverless SageMaker endpoint | Cost-optimized for showcase/demo workloads; scales to zero when idle |
+| Container orchestration | ECS Fargate + ALB | Managed compute for Streamlit app; ALB provides health checks and public HTTP access; Fargate eliminates server management |
+| IaC | Terraform modules (not flat) | Separates IAM, networking, compute, and ML concerns; cleaner diffs and code review |
 | State | S3 backend, no DynamoDB lock | Single-developer project — lock contention not a concern |
 | Packaging | `uv` with `pyproject.toml` + lockfile | Deterministic installs, 10-100× faster than pip, dependency groups for slim runtime |
 | Docker | `--only-group app` | Production container only installs Streamlit + requests (no SageMaker SDK / notebooks) |
