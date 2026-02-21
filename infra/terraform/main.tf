@@ -24,3 +24,20 @@ module "sagemaker-serverless-endpoint" {
     max_concurrency = var.sagemaker_max_concurrency
     memory_size_in_mb = var.sagemaker_memory_size_in_mb
 }
+
+module "alb-security-group" {
+    source = "./modules/security-group"
+
+    name = var.alb_sg_name
+    vpc_id = module.vpc.vpc_id
+    vpc_cidr_block = var.vpc_cidr_block
+
+    ingress_rules = [
+        {
+            from_port = var.alb_sg_ingress_from_port
+            to_port = var.alb_sg_ingress_to_port
+            protocol = var.alb_sg_ingress_protocol
+            cidr_blocks = var.alb_sg_ingress_cidr_blocks
+        }
+    ]
+}
