@@ -1,3 +1,7 @@
+# IAM configuration variables
+name_prefix    = "teleco-customer-churn"
+s3_bucket_name = "zvonimir-teleco-customer-churn"
+
 # Sagemaker endpoint configuration variables
 sagemaker_endpoint_default_region = "eu-central-1"
 sagemaker_model_data_uri = "s3://zvonimir-teleco-customer-churn/models/xgboost/xgboost-260216-0910-011-9f99f443/output/model.tar.gz"

@@ -1,3 +1,14 @@
+# IAM configuration variables
+variable "name_prefix" {
+  description = "Prefix for naming IAM roles"
+  type        = string
+}
+
+variable "s3_bucket_name" {
+  description = "Name of the S3 bucket for SageMaker access"
+  type        = string
+}
+
 # SageMaker endpoint configuration variables
 variable "sagemaker_endpoint_default_region" {
     description = "AWS region for resource deployment"
