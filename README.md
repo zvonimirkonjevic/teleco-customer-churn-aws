@@ -30,7 +30,7 @@ The Lambda proxy pattern decouples clients from SigV4 signing — clients hit a 
 | **Data Processing** | pandas, NumPy, scikit-learn | Feature engineering, StandardScaler, one-hot/binary encoding → 46 features |
 | **Class Balancing** | SMOTE (imbalanced-learn) | Oversampled minority class: 1,869 → 4,139 synthetic samples |
 | **Visualization** | Matplotlib, Seaborn | EDA charts, correlation matrix, customer segmentation |
-| **IaC** | Terraform (~> 5.0) | Modular layout: `modules/iam`, `modules/vpc`, `modules/sagemaker-endpoint`; S3 remote state |
+| **IaC** | Terraform (~> 5.0) | Modular layout: `modules/iam`, `modules/vpc`, `modules/security-group`, `modules/sagemaker-endpoint`; S3 remote state |
 | **Inference** | SageMaker Endpoint | Real-time, `ml.m5.large` × 1 instance, single `AllTraffic` variant |
 | **API** | API Gateway + Lambda | Lambda proxy handles SigV4 signing; public REST endpoint |
 | **Front-end** | Streamlit 1.54+ | Two-column form, `requests`-based API client, risk-level display |
@@ -94,6 +94,7 @@ Modular Terraform configuration in `infra/terraform/`. See [infra/README.md](inf
 |---|---|
 | `modules/iam` | SageMaker execution role, `AmazonSageMakerFullAccess` attachment, inline S3 read policy |
 | `modules/vpc` | VPC, public/private subnets, internet gateway, NAT gateways (one per AZ), public/private route tables |
+| `modules/security-group` | Reusable security group with dynamic ingress/egress rules |
 | `modules/sagemaker-endpoint` | Prebuilt XGBoost ECR image lookup, `aws_sagemaker_model`, endpoint config (`ml.m5.large` × 1), real-time endpoint |
 
 **State:** S3 backend (`teleco-churn-terraform-state`), encrypted, `eu-central-1`, profile `teleco-churn-terraform`.
@@ -186,6 +187,10 @@ teleco-customer-churn-aws/
 │           ├── vpc/                        #   VPC, subnets, IGW, NAT gateways, route tables
 │           │   ├── main.tf
 │           │   └── variables.tf
+│           ├── security-group/             #   Reusable security group with dynamic rules
+│           │   ├── main.tf
+│           │   ├── variables.tf
+│           │   └── outputs.tf
 │           └── sagemaker-endpoint/         #   Model, endpoint config, endpoint
 │               ├── main.tf
 │               └── variables.tf

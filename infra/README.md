@@ -19,6 +19,10 @@ infra/
         ├── vpc/
         │   ├── main.tf                     # VPC, subnets, IGW, NAT gateways, route tables
         │   └── variables.tf                # CIDR blocks, AZs, naming
+        ├── security-group/
+        │   ├── main.tf                     # Security group with dynamic ingress/egress rules
+        │   ├── variables.tf                # Name, VPC ID, rule definitions
+        │   └── outputs.tf                  # security_group_id
         └── sagemaker-endpoint/
             ├── main.tf                     # Model, endpoint config, real-time endpoint
             └── variables.tf                # default_region, model_data_uri
@@ -44,6 +48,7 @@ infra/
 | `vpc` | Public route tables | `aws_route_table` | Routes to internet gateway |
 | `vpc` | Private route tables | `aws_route_table` | Routes to NAT gateway |
 | `vpc` | Route table associations | `aws_route_table_association` | Links subnets to route tables |
+| `security-group` | Security group | `aws_security_group` | Dynamic ingress/egress rules, default egress allows all outbound |
 
 ## State Management
 
@@ -59,7 +64,7 @@ infra/
 
 | Decision | Rationale |
 |---|---|
-| **Modular layout** | Resources split into `iam/`, `vpc/`, and `sagemaker-endpoint/` modules for separation of concerns |
+| **Modular layout** | Resources split into `iam/`, `vpc/`, `security-group/`, and `sagemaker-endpoint/` modules for separation of concerns |
 | **Single environment** | No multi-env (dev/staging/prod) overhead — single flat root |
 | **S3 remote state** | Encrypted, durable state storage; no DynamoDB lock table (single developer) |
 | **Named AWS profile** | Credential isolation via dedicated `teleco-churn-terraform` profile |

@@ -17,6 +17,10 @@ terraform/
     ├── vpc/
     │   ├── main.tf                     # VPC, subnets, IGW, NAT gateways, route tables
     │   └── variables.tf                # CIDR blocks, AZs, naming
+    ├── security-group/
+    │   ├── main.tf                     # Security group with dynamic ingress/egress rules
+    │   ├── variables.tf                # Name, VPC ID, rule definitions
+    │   └── outputs.tf                  # security_group_id
     └── sagemaker-endpoint/
         ├── main.tf                     # Model, endpoint config, endpoint resources
         └── variables.tf                # default_region, model_data_uri
@@ -73,6 +77,30 @@ Provisions the network layer: VPC, subnets, internet gateway, NAT gateways, and 
 | `private_subnet_cidr_block` | `string` | CIDR block for private subnets |
 | `public_route_table_cidr_block` | `string` | CIDR block for public route table |
 | `private_route_table_cidr_block` | `string` | CIDR block for private route table |
+
+### `modules/security-group`
+
+Reusable security group module with dynamic ingress and egress rules. Default egress allows all outbound traffic (`0.0.0.0/0`).
+
+| Resource | Type | Detail |
+|---|---|---|
+| `teleco-customer-churn-security-group` | `aws_security_group` | Dynamic ingress/egress blocks from variable-defined rule lists |
+
+**Variables:**
+
+| Name | Type | Description |
+|---|---|---|
+| `name` | `string` | Security group name |
+| `vpc_id` | `string` | VPC to attach the security group to |
+| `vpc_cidr_block` | `string` | VPC CIDR block |
+| `ingress_rules` | `list(object)` | Ingress rules: `from_port`, `to_port`, `protocol`, `cidr_blocks`, `security_groups` |
+| `egress_rules` | `list(object)` | Egress rules: `from_port`, `to_port`, `protocol`, `cidr_blocks` (default: allow all) |
+
+**Outputs:**
+
+| Name | Description |
+|---|---|
+| `security_group_id` | ID of the created security group |
 
 ### `modules/sagemaker-endpoint`
 
