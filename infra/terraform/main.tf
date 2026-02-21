@@ -1,5 +1,8 @@
 module "iam" {
     source = "./modules/iam"
+
+    name_prefix    = var.name_prefix
+    s3_bucket_name = var.s3_bucket_name
 }
 
 module "vpc" {
