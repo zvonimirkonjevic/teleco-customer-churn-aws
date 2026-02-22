@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM public.ecr.aws/docker/library/python:3.13-slim
 
 # Set working directory
 WORKDIR /app
@@ -18,7 +18,11 @@ RUN uv sync --frozen --only-group app
 
 # Copy application files
 COPY app/app.py app/config.py app/components.py ./
-COPY app/.streamlit/ .streamlit/
+COPY app/.streamlit/config.toml .streamlit/
+
+# Create non-root user
+RUN useradd --create-home appuser && chown -R appuser:appuser /app
+USER appuser
 
 # Expose Streamlit port
 EXPOSE 8501
