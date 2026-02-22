@@ -7,7 +7,6 @@ Run with:  streamlit run app/app.py
 
 import streamlit as st
 
-from api_client import make_prediction
 from components import (
     inject_styles,
     render_form,
