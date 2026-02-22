@@ -116,6 +116,13 @@ module "ecs_task_and_execution_roles" {
           "arn:aws:s3:::${var.s3_bucket_name}",
           "arn:aws:s3:::${var.s3_bucket_name}/*"
         ]
+      },
+      {
+        Action = [
+          "sagemaker:InvokeEndpoint"
+        ],
+        Effect   = "Allow",
+        Resource = "${module.sagemaker_serverless_endpoint.sagemaker_endpoint_arn}"
       }
     ]
   })
