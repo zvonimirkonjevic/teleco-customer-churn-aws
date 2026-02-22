@@ -13,9 +13,8 @@ import streamlit as st
 
 API_ENDPOINT: str = st.secrets.get(
     "API_ENDPOINT",
-    "https://your-api-gateway-id.execute-api.us-east-1.amazonaws.com/prod/predict",
+    "http://prediction-api:8000",
 )
-API_TIMEOUT_SECONDS: int = 30
 
 
 # ---------------------------------------------------------------------------

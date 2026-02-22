@@ -14,6 +14,7 @@ from components import (
     render_results,
     render_sidebar,
 )
+from predict import make_prediction
 
 # ── Page config (must be the first Streamlit command) ──────────────────────
 st.set_page_config(
