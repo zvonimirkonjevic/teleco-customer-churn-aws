@@ -70,7 +70,7 @@ module "ecs_sg" {
 module "ecs_task_and_execution_roles" {
   source                   = "./modules/iam"
   name_prefix              = var.name_prefix
-  s3_bucket_name = var.s3_bucket_name
+  s3_bucket_name           = var.s3_bucket_name
   attach_cloudwatch_policy = true
   attach_ssm_policy        = false
   create_custom_task_policy = true
@@ -117,13 +117,6 @@ module "ecs_task_and_execution_roles" {
           "arn:aws:s3:::${var.s3_bucket_name}/*"
         ]
       },
-      {
-        Action = [
-          "sagemaker:InvokeEndpoint"
-        ],
-        Effect   = "Allow",
-        Resource = "${module.sagemaker_serverless_endpoint.sagemaker_endpoint_arn}"
-      }
     ]
   })
 }
@@ -191,4 +184,35 @@ module "alb" {
   security_group_ids = [module.alb_sg.security_group_id]
   target_port = var.container_port
   environment = var.environment
+}
+
+module "lambda_execution_role" {
+  source = "./modules/iam"
+
+  name_prefix          = var.name_prefix
+  s3_bucket_name       = var.s3_bucket_name
+  sagemaker_endpoint_arn = module.sagemaker_serverless_endpoint.sagemaker_endpoint_arn
+}
+
+module "prediction_api_lambda" {
+  source = "./modules/lambda"
+
+  name_prefix             = var.name_prefix
+  execution_role_arn      = module.lambda_execution_role.lambda_execution_role_arn
+  image_uri               = var.lambda_image_uri
+  sagemaker_endpoint_name = module.sagemaker_serverless_endpoint.sagemaker_endpoint_name
+  aws_region              = var.region
+  memory_size             = 256
+  timeout                 = 30
+  environment             = var.environment
+}
+
+module "prediction_api_gateway" {
+  source = "./modules/api-gateway"
+
+  name_prefix          = var.name_prefix
+  lambda_invoke_arn    = module.prediction_api_lambda.invoke_arn
+  lambda_function_name = module.prediction_api_lambda.function_name
+  stage_name           = "v1"
+  environment          = var.environment
 }

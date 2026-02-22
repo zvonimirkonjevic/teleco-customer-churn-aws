@@ -31,12 +31,15 @@ ecs_task_sg_ingress_protocol = "tcp"
 container_port = 80
 
 # ECS Task Definition configuration variables
-container_name   = "teleco-customer-churn"
-container_cpu    = 256
+container_name = "teleco-customer-churn"
+container_cpu = 256
 container_memory = 512
-container_image  = "PLACEHOLDER_IMAGE_URI"
-region           = "eu-central-1"
+container_image = "879801897034.dkr.ecr.eu-central-1.amazonaws.com/teleco-customer-churn-app:latest"
+region = "eu-central-1"
 
 # ECS Service configuration variables
 desired_count    = 1
 environment      = "dev"
+
+# Lambda configuration variables
+lambda_image_uri = "879801897034.dkr.ecr.eu-central-1.amazonaws.com/teleco-customer-churn-api:latest"

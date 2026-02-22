@@ -182,3 +182,9 @@ variable "environment" {
   type = string
   default = "dev"
 }
+
+# Lambda configuration variables
+variable "lambda_image_uri" {
+  description = "ECR image URI for the Lambda prediction API"
+  type        = string
+}
