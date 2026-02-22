@@ -1508,6 +1508,18 @@ wheels = [
 ]
 
 [[package]]
+name = "mangum"
+version = "0.21.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/89/cb/d9f4d685a0b8eceac10991e15ac471d9568e4e42c2489ae9bf072828c1c2/mangum-0.21.0.tar.gz", hash = "sha256:e31ed72d67f9958fa4379f65df77729906dec6dfa00afa6ed4e06c77833000de", size = 89130, upload-time = "2026-02-01T17:17:42.816Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/50/e3c694b8e122551e4557450219283771334dee2ed5734a8398c8b8018c50/mangum-0.21.0-py3-none-any.whl", hash = "sha256:309e48f5c629542516c5106ecf079f4ec08809ed50df882238d98fe1392820c7", size = 17146, upload-time = "2026-02-01T17:17:41.553Z" },
+]
+
+[[package]]
 name = "markdown-it-py"
 version = "4.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3623,6 +3635,7 @@ dependencies = [
     { name = "boto3" },
     { name = "imbalanced-learn" },
     { name = "ipykernel" },
+    { name = "mangum" },
     { name = "pandas" },
     { name = "requests" },
     { name = "sagemaker" },
@@ -3632,6 +3645,12 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
+api = [
+    { name = "boto3" },
+    { name = "fastapi" },
+    { name = "mangum" },
+    { name = "uvicorn" },
+]
 app = [
     { name = "requests" },
     { name = "streamlit" },
@@ -3642,6 +3661,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.42.45" },
     { name = "imbalanced-learn", specifier = ">=0.14.1" },
     { name = "ipykernel", specifier = ">=7.2.0" },
+    { name = "mangum", specifier = ">=0.21.0" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "sagemaker", specifier = ">=3.4.0" },
@@ -3651,6 +3671,12 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
+api = [
+    { name = "boto3", specifier = ">=1.42.45" },
+    { name = "fastapi", specifier = ">=0.115.0" },
+    { name = "mangum", specifier = ">=0.19.0" },
+    { name = "uvicorn", specifier = ">=0.34.0" },
+]
 app = [
     { name = "requests", specifier = ">=2.32.5" },
     { name = "streamlit", specifier = ">=1.54.0" },
