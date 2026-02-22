@@ -1,11 +1,32 @@
 version: '3.8'
 
 services:
+  prediction-api:
+    build:
+      context: .
+      dockerfile: api/environment/Dockerfile.local
+    container_name: telco-customer-churn-api
+    ports:
+      - "8000:8000"
+    environment:
+      - SAGEMAKER_ENDPOINT_NAME=teleco-customer-churn-xgboost-endpoint
+      - AWS_REGION=eu-central-1
+      - CHURN_THRESHOLD=0.5
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
   streamlit-app:
     build:
       context: .
       dockerfile: app/environment/Dockerfile.local
-    container_name: telco-churn-predictor
+    container_name: teleco-customer-churn-app
     ports:
       - "8501:8501"
     volumes:
@@ -14,6 +35,8 @@ services:
       - STREAMLIT_SERVER_PORT=8501
       - STREAMLIT_SERVER_ADDRESS=0.0.0.0
       - STREAMLIT_SERVER_HEADLESS=true
+    depends_on:
+      - prediction-api
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
