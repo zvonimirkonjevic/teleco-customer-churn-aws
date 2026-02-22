@@ -1,0 +1,25 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy uv project files from the repository root
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies using uv from the lockfile
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+RUN uv sync --frozen --only-group api
+
+# Copy API application files
+COPY api/src/ ./
+
+# Expose API port
+EXPOSE 8000
+
+# Run the application with uvicorn
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
