@@ -22,3 +22,9 @@ variable "iam_role_arn" {
     type        = string
     description = "The ARN of the IAM role for SageMaker execution"
 }
+
+variable "xgboost_image_tag" {
+    type        = string
+    description = "The XGBoost container image tag (must match the version used for training)"
+    default     = "1.7-1"
+}

@@ -112,3 +112,28 @@ resource "aws_iam_role_policy" "custom_execution_access" {
   role   = aws_iam_role.ecs_execution.name
   policy = var.custom_execution_policy_json
 }
+
+# Lambda Execution Role (used by the Lambda function to access AWS resources)
+resource "aws_iam_role" "lambda_execution" {
+  name = "${var.name_prefix}-lambda-execution-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+
+  tags = {
+    Name = "${var.name_prefix}-lambda-execution-role"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+  role       = aws_iam_role.lambda_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}

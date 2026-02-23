@@ -1,7 +1,7 @@
 data "aws_sagemaker_prebuilt_ecr_image" "xgboost" {
   region = var.default_region
   repository_name = "sagemaker-xgboost"
-  image_tag = "1.7-1"
+  image_tag = var.xgboost_image_tag
 }
 
 resource "aws_sagemaker_model" "xgboost_model" {
@@ -20,7 +20,6 @@ resource "aws_sagemaker_endpoint_configuration" "xgboost_endpoint_config" {
     production_variants {
       variant_name = "AllTraffic"
       model_name = aws_sagemaker_model.xgboost_model.name
-      initial_instance_count = 1
       # serverless configuration for cost optimization, intended for showcase purpose.
       serverless_config {
         max_concurrency = var.max_concurrency

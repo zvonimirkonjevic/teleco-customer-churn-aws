@@ -8,6 +8,16 @@ variable "execution_role_arn" {
   type        = string
 }
 
+variable "execution_role_name" {
+  description = "The name of the IAM execution role for attaching policies"
+  type        = string
+}
+
+variable "sagemaker_endpoint_arn" {
+  description = "The ARN of the SageMaker endpoint for the invoke policy"
+  type        = string
+}
+
 variable "image_uri" {
   description = "The ECR image URI for the Lambda function container"
   type        = string
