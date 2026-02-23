@@ -20,14 +20,14 @@ variable "name" {
     type        = string
 }
 
-variable "public_subnet_cidr_block" {
-    description = "The CIDR block for the public subnet."
-    type        = string
+variable "public_subnet_cidr_blocks" {
+    description = "The CIDR blocks for the public subnets (one per AZ)."
+    type        = list(string)
 }
 
-variable "private_subnet_cidr_block" {
-    description = "The CIDR block for the private subnet."
-    type        = string
+variable "private_subnet_cidr_blocks" {
+    description = "The CIDR blocks for the private subnets (one per AZ)."
+    type        = list(string)
 }
 
 variable "public_route_table_cidr_block" {

@@ -4,7 +4,7 @@ s3_bucket_name = "zvonimir-teleco-customer-churn"
 
 # Sagemaker endpoint configuration variables
 sagemaker_endpoint_default_region = "eu-central-1"
-sagemaker_model_data_uri = "s3://zvonimir-teleco-customer-churn/models/xgboost/xgboost-260216-0910-011-9f99f443/output/model.tar.gz"
+sagemaker_model_data_uri = "s3://zvonimir-teleco-customer-churn/models/xgboost/sagemaker-xgboost-260223-1743-015-d0d9d493/output/model.tar.gz"
 sagemaker_max_concurrency = 1
 sagemaker_memory_size_in_mb = 2048
 
@@ -13,8 +13,8 @@ vpc_name = "teleco-customer-churn-vpc"
 vpc_cidr_block = "10.0.0.0/16"
 vpc_instance_tenancy = "default"
 availability_zones = ["eu-central-1a", "eu-central-1b"]
-public_subnet_cidr_block = "10.0.1.0/24"
-private_subnet_cidr_block = "10.0.2.0/24"
+public_subnet_cidr_blocks = ["10.0.1.0/24", "10.0.3.0/24"]
+private_subnet_cidr_blocks = ["10.0.2.0/24", "10.0.4.0/24"]
 public_route_table_cidr_block = "0.0.0.0/0"
 private_route_table_cidr_block = "0.0.0.0/0"
 

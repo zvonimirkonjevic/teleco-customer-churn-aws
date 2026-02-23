@@ -1,3 +1,8 @@
+resource "aws_cloudwatch_log_group" "ecs" {
+  name              = "/ecs/${var.family_name}"
+  retention_in_days = 30
+}
+
 resource "aws_ecs_task_definition" "teleco-customer-churn-prediction" {
   family                   = var.family_name
   requires_compatibilities = ["FARGATE"]

@@ -61,8 +61,8 @@ module "vpc" {
     cidr_block = var.vpc_cidr_block
     instance_tenancy = var.vpc_instance_tenancy
     availability_zones = var.availability_zones
-    public_subnet_cidr_block = var.public_subnet_cidr_block
-    private_subnet_cidr_block = var.private_subnet_cidr_block
+    public_subnet_cidr_blocks = var.public_subnet_cidr_blocks
+    private_subnet_cidr_blocks = var.private_subnet_cidr_blocks
     public_route_table_cidr_block = var.public_route_table_cidr_block
     private_route_table_cidr_block = var.private_route_table_cidr_block
 }

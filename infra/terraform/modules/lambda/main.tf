@@ -25,7 +25,6 @@ resource "aws_lambda_function" "prediction_api" {
   environment {
     variables = {
       SAGEMAKER_ENDPOINT_NAME = var.sagemaker_endpoint_name
-      AWS_REGION              = var.aws_region
       CHURN_THRESHOLD         = var.churn_threshold
     }
   }
