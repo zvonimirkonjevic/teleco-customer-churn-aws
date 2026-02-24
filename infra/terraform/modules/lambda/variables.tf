@@ -28,11 +28,6 @@ variable "sagemaker_endpoint_name" {
   type        = string
 }
 
-variable "aws_region" {
-  description = "AWS region where resources are deployed"
-  type        = string
-}
-
 variable "churn_threshold" {
   description = "Churn probability threshold (0-1) above which a customer is considered high risk"
   type        = string

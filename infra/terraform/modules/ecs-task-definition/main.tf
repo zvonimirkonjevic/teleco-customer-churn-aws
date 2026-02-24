@@ -19,6 +19,7 @@ resource "aws_ecs_task_definition" "teleco-customer-churn-prediction" {
         cpu      = var.container_cpu
         memory   = var.container_memory
         essential = true
+        environment = var.environment_variables
         portMappings = [
           {
             containerPort = var.container_port
@@ -27,11 +28,11 @@ resource "aws_ecs_task_definition" "teleco-customer-churn-prediction" {
           }
         ],
         healthCheck = {
-          command     = ["CMD-SHELL", "curl -f http://localhost:${var.container_port}/ || exit 1"]
+          command     = ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${var.container_port}/_stcore/health')\" || exit 1"]
           interval    = 30
           timeout     = 5
           retries     = 3
-          startPeriod = 60
+          startPeriod = 180
         },
         logConfiguration = {
           logDriver = "awslogs"

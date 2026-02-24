@@ -2,8 +2,13 @@ resource "aws_ecs_service" "teleco-customer-churn-service" {
     name           = "${var.name_prefix}-service"
     cluster        = var.cluster_id
     task_definition = var.task_definition_arn
-    launch_type   = "FARGATE"
     desired_count = var.desired_count
+
+    capacity_provider_strategy {
+      capacity_provider = "FARGATE"
+      weight            = 1
+      base              = 1
+    }
     force_new_deployment = var.force_new_deployment
     health_check_grace_period_seconds = var.health_check_grace_period_seconds
 

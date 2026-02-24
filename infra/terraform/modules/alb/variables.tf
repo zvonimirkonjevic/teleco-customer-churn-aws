@@ -24,6 +24,12 @@ variable "vpc_id" {
     type        = string
 }
 
+variable "health_check_path" {
+    description = "Path for the ALB target group health check"
+    type        = string
+    default     = "/"
+}
+
 variable "environment" {
     description = "Environment tag for the resources (e.g., dev, staging, prod)"
     type        = string

@@ -9,11 +9,6 @@ variable "vpc_id" {
     type        = string
 }
 
-variable "vpc_cidr_block" {
-    description = "The VPC CIDR block."
-    type        = string
-}
-
 variable "ingress_rules" {
     description = "The ingress rules for the security group."
     type        = list(object({

@@ -5,7 +5,7 @@ data "aws_sagemaker_prebuilt_ecr_image" "xgboost" {
 }
 
 resource "aws_sagemaker_model" "xgboost_model" {
-  name = "teleco-customer-churn-xgboost-model"
+  name = "${var.name_prefix}-xgboost-model"
   execution_role_arn = var.iam_role_arn
 
   primary_container {
@@ -15,7 +15,7 @@ resource "aws_sagemaker_model" "xgboost_model" {
 }
 
 resource "aws_sagemaker_endpoint_configuration" "xgboost_endpoint_config" {
-    name = "teleco-customer-churn-xgboost-endpoint-config"
+    name = "${var.name_prefix}-xgboost-endpoint-config"
 
     production_variants {
       variant_name = "AllTraffic"
@@ -29,6 +29,6 @@ resource "aws_sagemaker_endpoint_configuration" "xgboost_endpoint_config" {
 }
 
 resource "aws_sagemaker_endpoint" "xgboost_endpoint" {
-    name = "teleco-customer-churn-xgboost-endpoint"
+    name = "${var.name_prefix}-xgboost-endpoint"
     endpoint_config_name = aws_sagemaker_endpoint_configuration.xgboost_endpoint_config.name
 }

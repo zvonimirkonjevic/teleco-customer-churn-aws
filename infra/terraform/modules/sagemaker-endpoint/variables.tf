@@ -23,6 +23,12 @@ variable "iam_role_arn" {
     description = "The ARN of the IAM role for SageMaker execution"
 }
 
+variable "name_prefix" {
+    type        = string
+    description = "Prefix for naming SageMaker resources"
+    default     = "teleco-customer-churn"
+}
+
 variable "xgboost_image_tag" {
     type        = string
     description = "The XGBoost container image tag (must match the version used for training)"

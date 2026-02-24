@@ -20,14 +20,14 @@ resource "aws_lb_target_group" "teleco_customer_churn_target_group" {
     target_type = "ip"
 
     health_check {
-      path = "/"
+      path = var.health_check_path
       port = "traffic-port"
       protocol = "HTTP"
       interval = 30
       timeout = 5
       healthy_threshold = 2
       unhealthy_threshold = 3
-      matcher = "200"
+      matcher = "200,302"
     }
 }
 

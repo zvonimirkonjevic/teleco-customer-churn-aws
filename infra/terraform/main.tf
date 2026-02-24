@@ -70,6 +70,7 @@ module "vpc" {
 module "sagemaker_serverless_endpoint" {
     source = "./modules/sagemaker-endpoint"
 
+    name_prefix = var.name_prefix
     default_region = var.sagemaker_endpoint_default_region
     iam_role_arn = module.iam_roles.sagemaker_execution_role_iam_arn
     model_data_uri = var.sagemaker_model_data_uri
@@ -82,7 +83,6 @@ module "alb_sg" {
 
     name = var.alb_sg_name
     vpc_id = module.vpc.vpc_id
-    vpc_cidr_block = var.vpc_cidr_block
 
     ingress_rules = [
         {
@@ -101,7 +101,6 @@ module "ecs_sg" {
 
     name = var.ecs_task_sg_name
     vpc_id = module.vpc.vpc_id
-    vpc_cidr_block = var.vpc_cidr_block
 
     ingress_rules = [
         {
@@ -149,6 +148,13 @@ module "ecs_task_definition" {
 
   execution_role_arn = module.iam_roles.ecs_execution_role_arn
   task_role_arn      = module.iam_roles.ecs_task_role_arn
+
+  environment_variables = [
+    {
+      name  = "API_ENDPOINT"
+      value = module.prediction_api_gateway.api_endpoint
+    }
+  ]
 }
 
 module "ecs_service" {
@@ -163,7 +169,7 @@ module "ecs_service" {
   container_port                = var.container_port
 
   force_new_deployment              = true
-  health_check_grace_period_seconds = 60
+  health_check_grace_period_seconds = 180
 
   private_subnet_ids            = module.vpc.private_subnet_ids
   security_group_ids            = [module.ecs_sg.security_group_id]
@@ -177,8 +183,9 @@ module "alb" {
   vpc_id = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
   security_group_ids = [module.alb_sg.security_group_id]
-  target_port = var.container_port
-  environment = var.environment
+  target_port       = var.container_port
+  health_check_path = "/_stcore/health"
+  environment       = var.environment
 }
 
 module "prediction_api_lambda" {
@@ -190,7 +197,6 @@ module "prediction_api_lambda" {
   image_uri               = var.lambda_image_uri
   sagemaker_endpoint_name = module.sagemaker_serverless_endpoint.sagemaker_endpoint_name
   sagemaker_endpoint_arn  = module.sagemaker_serverless_endpoint.sagemaker_endpoint_arn
-  aws_region              = var.region
   memory_size             = 256
   timeout                 = 30
   environment             = var.environment

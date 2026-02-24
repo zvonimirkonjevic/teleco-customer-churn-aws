@@ -52,3 +52,12 @@ variable "region" {
   description = "The AWS region where resources are deployed"
   type        = string
 }
+
+variable "environment_variables" {
+  description = "Environment variables to pass to the container"
+  type        = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+}
