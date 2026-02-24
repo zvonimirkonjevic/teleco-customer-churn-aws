@@ -14,13 +14,14 @@ from components import (
     render_results,
     render_sidebar,
 )
+from config import PAGE_TITLE, PAGE_LAYOUT, SIDEBAR_STATE
 from predict import make_prediction, PredictionError
 
 # ── Page config (must be the first Streamlit command) ──────────────────────
 st.set_page_config(
-    page_title="Telco Customer Churn Predictor",
-    layout="centered",
-    initial_sidebar_state="expanded",
+    page_title=PAGE_TITLE,
+    layout=PAGE_LAYOUT,
+    initial_sidebar_state=SIDEBAR_STATE,
 )
 
 # ── Layout ─────────────────────────────────────────────────────────────────

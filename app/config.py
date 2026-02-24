@@ -22,8 +22,8 @@ API_ENDPOINT: str = os.environ.get(
 # ---------------------------------------------------------------------------
 
 MODEL_ALGORITHM: str = "XGBoost"
-MODEL_ACCURACY: str = "85%"
-MODEL_AUC: str = "0.88"
+MODEL_ACCURACY: str = "77%"
+MODEL_AUC: str = "0.84"
 
 
 # ---------------------------------------------------------------------------

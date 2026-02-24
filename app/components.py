@@ -6,6 +6,8 @@ Reusable Streamlit UI building blocks: styles, forms, results display, sidebar.
 
 import streamlit as st
 
+from config import MODEL_ALGORITHM, MODEL_ACCURACY, MODEL_AUC
+
 
 # ---------------------------------------------------------------------------
 # Styles
@@ -282,14 +284,14 @@ def render_sidebar() -> None:
     with st.sidebar:
         st.header("About")
         st.write(
-            """
+            f"""
             This application predicts customer churn probability using a
             machine learning model deployed on AWS SageMaker.
 
             **Model Information:**
-            - Algorithm: XGBoost
-            - Accuracy: 85%
-            - AUC: 0.88
+            - Algorithm: {MODEL_ALGORITHM}
+            - Accuracy: {MODEL_ACCURACY}
+            - AUC: {MODEL_AUC}
             """
         )
 
