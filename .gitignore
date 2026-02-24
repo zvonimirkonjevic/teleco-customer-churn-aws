@@ -208,6 +208,8 @@ __marimo__/
 
 # Terraform
 .terraform/
+*.tfplan
+tfplan
 
 # Streamlit Secrets
 secrets.toml
