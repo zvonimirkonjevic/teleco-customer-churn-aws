@@ -197,7 +197,7 @@ module "prediction_api_lambda" {
   image_uri               = var.lambda_image_uri
   sagemaker_endpoint_name = module.sagemaker_serverless_endpoint.sagemaker_endpoint_name
   sagemaker_endpoint_arn  = module.sagemaker_serverless_endpoint.sagemaker_endpoint_arn
-  memory_size             = 256
+  memory_size             = 1024
   timeout                 = 30
   environment             = var.environment
 }
