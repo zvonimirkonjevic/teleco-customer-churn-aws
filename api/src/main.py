@@ -26,4 +26,4 @@ def predict(payload: PredictionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-handler = Mangum(app, lifespan="off")
+handler = Mangum(app, lifespan="off", api_gateway_base_path="/v1")
