@@ -6,8 +6,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 # Copy uv project files
 COPY pyproject.toml uv.lock ./
 
-# Install dependencies into Lambda's system Python (not a venv)
-RUN uv pip install --system boto3 fastapi loguru mangum uvicorn
+# Export pinned versions from lockfile and install into Lambda's system Python
+RUN uv export --frozen --only-group api --no-hashes -o requirements.txt && \
+    uv pip install --system -r requirements.txt
 
 # Copy model parameters (JSON — no sklearn/numpy needed)
 COPY data/processed/model_params.json ./artifacts/
