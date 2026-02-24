@@ -2,24 +2,26 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install uv early (small layer, rarely changes)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Copy uv project files from the repository root
 COPY pyproject.toml uv.lock ./
 
 # Install dependencies using uv from the lockfile
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN uv sync --frozen --only-group api
+
+# Copy model artifacts (scaler and feature names)
+COPY data/processed/scaler.pkl data/processed/feature_names.pkl ./artifacts/
 
 # Copy API application files
 COPY api/src/ ./
 
+# Set artifacts directory
+ENV ARTIFACTS_DIR=/app/artifacts
+
 # Expose API port
 EXPOSE 8000
 
-# Run the application with uvicorn
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application using the venv directly (skips uv overhead)
+CMD [".venv/bin/uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
