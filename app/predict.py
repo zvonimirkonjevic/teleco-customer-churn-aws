@@ -4,6 +4,10 @@ Telco Customer Churn Prediction — API Client
 Calls the FastAPI prediction API via HTTP and returns parsed predictions.
 """
 
+import json
+import boto3
+from botocore.auth import SigV4Auth
+from botocore.awsrequest import AWSRequest
 import requests
 
 from config import API_ENDPOINT
@@ -15,6 +19,28 @@ class PredictionError(Exception):
     def __init__(self, message: str, status_code: int | None = None):
         self.status_code = status_code
         super().__init__(message)
+
+
+def make_signed_request(url: str, payload: dict) -> dict:
+    session = boto3.Session()
+    credentials = session.get_credentials().get_frozen_credentials()
+
+    aws_request = AWSRequest(
+        method="POST",
+        url=url,
+        data=json.dumps(payload),
+        headers={"Content-Type": "application/json"},
+    )
+
+    SigV4Auth(credentials, "execute-api", session.region_name).add_auth(aws_request)
+
+    response = requests.post(
+        url,
+        data=aws_request.data,
+        headers=dict(aws_request.headers),
+        timeout=60,
+    )
+    return response
 
 
 def make_prediction(payload: dict) -> dict:
@@ -37,11 +63,8 @@ def make_prediction(payload: dict) -> dict:
         With a user-friendly message describing what went wrong.
     """
     try:
-        response = requests.post(
-            f"{API_ENDPOINT}/predict",
-            json=payload,
-            timeout=60,
-        )
+        response = make_signed_request(f"{API_ENDPOINT}/predict", payload)
+
     except requests.ConnectionError:
         raise PredictionError(
             "Could not connect to the prediction service. Please check that the API is running."

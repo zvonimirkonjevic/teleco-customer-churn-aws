@@ -17,6 +17,7 @@ from components import (
 from config import PAGE_TITLE, PAGE_LAYOUT, SIDEBAR_STATE
 from predict import make_prediction, PredictionError
 
+
 # ── Page config (must be the first Streamlit command) ──────────────────────
 st.set_page_config(
     page_title=PAGE_TITLE,
