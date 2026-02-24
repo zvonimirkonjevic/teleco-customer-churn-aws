@@ -1,26 +1,23 @@
 import json
-import pickle
 import os
 
 import boto3
-import numpy as np
 from loguru import logger
 
 from config import AWS_REGION, CHURN_THRESHOLD, SAGEMAKER_ENDPOINT_NAME
 
 _client = None
 
-# Load feature names and scaler from training artifacts
+# Load model parameters from JSON (no sklearn/numpy needed)
 _artifacts_dir = os.environ.get("ARTIFACTS_DIR", "/var/task/artifacts")
 
-with open(os.path.join(_artifacts_dir, "feature_names.pkl"), "rb") as f:
-    FEATURE_NAMES = pickle.load(f)
+with open(os.path.join(_artifacts_dir, "model_params.json")) as f:
+    _params = json.load(f)
 
-with open(os.path.join(_artifacts_dir, "scaler.pkl"), "rb") as f:
-    SCALER = pickle.load(f)
-
-# Numerical features that need scaling (must match training)
-SCALED_FEATURES = list(SCALER.feature_names_in_)
+FEATURE_NAMES: list[str] = _params["feature_names"]
+SCALED_FEATURES: list[str] = _params["scaler"]["features"]
+SCALER_MEANS: list[float] = _params["scaler"]["means"]
+SCALER_STDS: list[float] = _params["scaler"]["stds"]
 
 
 def _get_sagemaker_client():
@@ -123,11 +120,9 @@ def _preprocess(payload: dict) -> list[float]:
         _tenure_group(tenure),
         ["0_1yr", "1_2yr", "2_4yr", "4_6yr"], "TenureGroup"))
 
-    # Apply standard scaling to numerical features
-    raw_values = np.array([[features[f] for f in SCALED_FEATURES]])
-    scaled_values = SCALER.transform(raw_values)[0]
-    for i, feat in enumerate(SCALED_FEATURES):
-        features[feat] = float(scaled_values[i])
+    # Apply standard scaling: (value - mean) / std
+    for feat, mean, std in zip(SCALED_FEATURES, SCALER_MEANS, SCALER_STDS):
+        features[feat] = (features[feat] - mean) / std
 
     # Return features in the exact order the model expects
     return [features[f] for f in FEATURE_NAMES]
