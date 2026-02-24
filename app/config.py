@@ -4,14 +4,14 @@ Telco Customer Churn Prediction — Configuration
 Centralizes all application settings, constants, and secrets access.
 """
 
-import streamlit as st
+import os
 
 
 # ---------------------------------------------------------------------------
 # API Configuration
 # ---------------------------------------------------------------------------
 
-API_ENDPOINT: str = st.secrets.get(
+API_ENDPOINT: str = os.environ.get(
     "API_ENDPOINT",
     "http://prediction-api:8000",
 )
