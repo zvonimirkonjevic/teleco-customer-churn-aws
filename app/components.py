@@ -75,11 +75,33 @@ def render_form() -> dict | None:
         A dict of customer features if the form was submitted, else ``None``.
     """
     with st.form("prediction_form"):
-        st.subheader("Customer Information")
+        st.subheader("Customer Demographics")
 
         col1, col2 = st.columns(2)
 
         with col1:
+            gender = st.selectbox(
+                "Gender",
+                options=["Male", "Female"],
+                help="Customer's gender",
+            )
+            senior_citizen = st.selectbox(
+                "Senior Citizen",
+                options=["No", "Yes"],
+                help="Whether the customer is a senior citizen (65+)",
+            )
+            partner = st.selectbox(
+                "Partner",
+                options=["Yes", "No"],
+                help="Whether the customer has a partner",
+            )
+
+        with col2:
+            dependents = st.selectbox(
+                "Dependents",
+                options=["No", "Yes"],
+                help="Whether the customer has dependents",
+            )
             tenure = st.number_input(
                 "Tenure (months)",
                 min_value=0,
@@ -87,6 +109,13 @@ def render_form() -> dict | None:
                 value=12,
                 help="Number of months the customer has been with the company",
             )
+
+        st.divider()
+        st.subheader("Account Information")
+
+        col3, col4 = st.columns(2)
+
+        with col3:
             monthly_charges = st.number_input(
                 "Monthly Charges ($)",
                 min_value=0.0,
@@ -104,16 +133,11 @@ def render_form() -> dict | None:
                 help="Total charges accumulated by the customer",
             )
 
-        with col2:
+        with col4:
             contract = st.selectbox(
                 "Contract Type",
                 options=["Month-to-month", "One year", "Two year"],
                 help="Type of contract the customer has",
-            )
-            internet_service = st.selectbox(
-                "Internet Service",
-                options=["DSL", "Fiber optic", "No"],
-                help="Type of internet service",
             )
             payment_method = st.selectbox(
                 "Payment Method",
@@ -125,25 +149,38 @@ def render_form() -> dict | None:
                 ],
                 help="Customer's payment method",
             )
+            paperless_billing = st.selectbox(
+                "Paperless Billing", options=["Yes", "No"]
+            )
 
         st.divider()
-        st.subheader("Additional Services")
+        st.subheader("Services")
 
-        col3, col4 = st.columns(2)
+        col5, col6 = st.columns(2)
 
-        with col3:
+        with col5:
             phone_service = st.selectbox("Phone Service", options=["Yes", "No"])
+            multiple_lines = st.selectbox(
+                "Multiple Lines",
+                options=["Yes", "No", "No phone service"],
+                help="Whether the customer has multiple phone lines",
+            )
+            internet_service = st.selectbox(
+                "Internet Service",
+                options=["DSL", "Fiber optic", "No"],
+                help="Type of internet service",
+            )
             online_security = st.selectbox(
                 "Online Security", options=["Yes", "No", "No internet service"]
             )
             online_backup = st.selectbox(
                 "Online Backup", options=["Yes", "No", "No internet service"]
             )
+
+        with col6:
             device_protection = st.selectbox(
                 "Device Protection", options=["Yes", "No", "No internet service"]
             )
-
-        with col4:
             tech_support = st.selectbox(
                 "Tech Support", options=["Yes", "No", "No internet service"]
             )
@@ -152,9 +189,6 @@ def render_form() -> dict | None:
             )
             streaming_movies = st.selectbox(
                 "Streaming Movies", options=["Yes", "No", "No internet service"]
-            )
-            paperless_billing = st.selectbox(
-                "Paperless Billing", options=["Yes", "No"]
             )
 
         st.divider()
@@ -169,6 +203,10 @@ def render_form() -> dict | None:
         return None
 
     return {
+        "gender": gender,
+        "seniorCitizen": senior_citizen,
+        "partner": partner,
+        "dependents": dependents,
         "tenure": tenure,
         "monthlyCharges": monthly_charges,
         "totalCharges": total_charges,
@@ -176,6 +214,7 @@ def render_form() -> dict | None:
         "internetService": internet_service,
         "paymentMethod": payment_method,
         "phoneService": phone_service,
+        "multipleLines": multiple_lines,
         "onlineSecurity": online_security,
         "onlineBackup": online_backup,
         "deviceProtection": device_protection,
