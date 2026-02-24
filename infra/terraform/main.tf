@@ -50,6 +50,11 @@ module "iam_roles" {
           "arn:aws:s3:::${var.s3_bucket_name}/*"
         ]
       },
+      {
+        Action   = "execute-api:Invoke",
+        Effect   = "Allow",
+        Resource = "arn:aws:execute-api:${var.region}:*:${module.prediction_api_gateway.api_id}/*"
+      }
     ]
   })
 }
