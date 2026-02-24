@@ -12,7 +12,7 @@ terraform/
 ├── providers.tf                        # AWS provider alias (eu-central, profile: teleco-churn-terraform)
 ├── terraform.tfvars                    # Variable values for this deployment
 └── modules/
-    ├── iam/                            # SageMaker + ECS IAM roles and policies
+    ├── iam/                            # SageMaker + ECS + Lambda IAM roles and policies
     │   ├── main.tf
     │   ├── variables.tf
     │   └── outputs.tf
@@ -25,6 +25,14 @@ terraform/
     │   ├── variables.tf
     │   └── outputs.tf
     ├── sagemaker-endpoint/             # Model, serverless endpoint config, endpoint
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── lambda/                         # Lambda function (container image), SageMaker invoke policy
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── api-gateway/                    # HTTP API, Lambda integration, stage, permissions
     │   ├── main.tf
     │   ├── variables.tf
     │   └── outputs.tf
@@ -62,7 +70,7 @@ terraform/
 
 ### `modules/iam`
 
-Creates IAM roles for SageMaker and ECS with configurable policy attachments.
+Creates IAM roles for SageMaker, ECS, and Lambda with configurable policy attachments.
 
 | Resource | Type | Detail |
 |---|---|---|
@@ -99,6 +107,8 @@ Creates IAM roles for SageMaker and ECS with configurable policy attachments.
 | `ecs_task_role_arn` | ARN of the ECS task role |
 | `ecs_execution_role_name` | Name of the ECS execution role |
 | `ecs_task_role_name` | Name of the ECS task role |
+| `lambda_execution_role_arn` | ARN of the Lambda execution role |
+| `lambda_execution_role_name` | Name of the Lambda execution role |
 
 ### `modules/vpc`
 
@@ -187,6 +197,68 @@ Provisions the serverless inference stack:
 | Name | Description |
 |---|---|
 | `sagemaker_endpoint_name` | Name of the SageMaker endpoint |
+| `sagemaker_endpoint_arn` | ARN of the SageMaker endpoint |
+
+### `modules/lambda`
+
+Lambda function deployed from a container image (ECR). Attaches a SageMaker invoke policy scoped to the endpoint ARN.
+
+| Resource | Type | Detail |
+|---|---|---|
+| `sagemaker_invoke` | `aws_iam_role_policy` | Inline policy: `sagemaker:InvokeEndpoint` scoped to endpoint ARN |
+| `prediction_api` | `aws_lambda_function` | Container image from ECR, configurable memory/timeout, env vars for endpoint name and churn threshold |
+
+**Variables:**
+
+| Name | Type | Description |
+|---|---|---|
+| `name_prefix` | `string` | Prefix for naming Lambda resources |
+| `execution_role_arn` | `string` | ARN of the IAM execution role |
+| `execution_role_name` | `string` | Name of the IAM execution role (for policy attachment) |
+| `image_uri` | `string` | ECR image URI for the Lambda container |
+| `sagemaker_endpoint_name` | `string` | SageMaker endpoint name (passed as env var) |
+| `sagemaker_endpoint_arn` | `string` | SageMaker endpoint ARN (for invoke policy) |
+| `churn_threshold` | `string` | Churn probability threshold (default: `"0.5"`) |
+| `memory_size` | `number` | Lambda memory in MB (default: `256`) |
+| `timeout` | `number` | Lambda timeout in seconds (default: `30`) |
+| `environment` | `string` | Environment tag (default: `"dev"`) |
+
+**Outputs:**
+
+| Name | Description |
+|---|---|
+| `function_name` | Name of the Lambda function |
+| `function_arn` | ARN of the Lambda function |
+| `invoke_arn` | Invoke ARN for API Gateway integration |
+
+### `modules/api-gateway`
+
+HTTP API Gateway with Lambda proxy integration. Uses a `$default` catch-all route so FastAPI (via Mangum) handles all routing internally.
+
+| Resource | Type | Detail |
+|---|---|---|
+| `prediction_api` | `aws_apigatewayv2_api` | HTTP protocol type |
+| `lambda` | `aws_apigatewayv2_integration` | AWS_PROXY, payload format 2.0 |
+| `default` | `aws_apigatewayv2_route` | `$default` catch-all route |
+| `default` | `aws_apigatewayv2_stage` | Auto-deploy enabled, configurable stage name (default: `v1`) |
+| `api_gateway` | `aws_lambda_permission` | Allows API Gateway to invoke the Lambda function |
+
+**Variables:**
+
+| Name | Type | Description |
+|---|---|---|
+| `name_prefix` | `string` | Prefix for naming API Gateway resources |
+| `lambda_invoke_arn` | `string` | Invoke ARN of the Lambda function |
+| `lambda_function_name` | `string` | Lambda function name (for invocation permission) |
+| `stage_name` | `string` | Deployment stage name (default: `"v1"`) |
+| `environment` | `string` | Environment tag (default: `"dev"`) |
+
+**Outputs:**
+
+| Name | Description |
+|---|---|
+| `api_endpoint` | Base URL of the API Gateway (includes stage path) |
+| `api_id` | ID of the API Gateway |
 
 ### `modules/alb`
 
@@ -195,7 +267,7 @@ Application Load Balancer with HTTP listener and IP-based target group.
 | Resource | Type | Detail |
 |---|---|---|
 | `teleco_customer_churn_alb` | `aws_lb` | Application type, public subnets, idle timeout 60s |
-| `teleco_customer_churn_target_group` | `aws_lb_target_group` | IP target type, HTTP health check (path: `/`, interval: 30s, healthy: 2, unhealthy: 3) |
+| `teleco_customer_churn_target_group` | `aws_lb_target_group` | IP target type, HTTP health check (path: `/_stcore/health`, interval: 30s, healthy: 2, unhealthy: 3) |
 | `teleco_customer_churn_listener` | `aws_lb_listener` | Port 80 HTTP, forwards to target group |
 
 **Variables:**
