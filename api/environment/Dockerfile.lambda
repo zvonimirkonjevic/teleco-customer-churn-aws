@@ -7,7 +7,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 COPY pyproject.toml uv.lock ./
 
 # Install dependencies into Lambda's system Python (not a venv)
-RUN uv pip install --system boto3 fastapi mangum numpy scikit-learn uvicorn
+RUN uv pip install --system boto3 fastapi loguru mangum numpy scikit-learn uvicorn
 
 # Copy model artifacts (scaler and feature names)
 COPY data/processed/scaler.pkl data/processed/feature_names.pkl ./artifacts/
