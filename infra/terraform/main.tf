@@ -123,7 +123,7 @@ module "ecs_sg" {
 module "ecs" {
   source      = "./modules/ecs"
   name_prefix = var.name_prefix
-  environment = "dev"
+  environment = var.environment
 
   enable_container_insights = true
 
