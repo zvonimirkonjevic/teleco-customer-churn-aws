@@ -212,4 +212,4 @@ __marimo__/
 tfplan
 
 # Streamlit Secrets
-secrets.toml
+app/.streamlit/secrets.toml
