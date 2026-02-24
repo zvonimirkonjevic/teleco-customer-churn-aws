@@ -14,7 +14,7 @@ from components import (
     render_results,
     render_sidebar,
 )
-from predict import make_prediction
+from predict import make_prediction, PredictionError
 
 # ── Page config (must be the first Streamlit command) ──────────────────────
 st.set_page_config(
@@ -34,8 +34,10 @@ if payload is not None:
         try:
             result = make_prediction(payload)
             render_results(result)
+        except PredictionError as e:
+            st.error(str(e))
         except Exception as e:
-            st.error(f"Error making prediction: {e}")
+            st.error(f"An unexpected error occurred: {e}")
             st.info("Please check your API endpoint configuration and try again.")
 
 render_sidebar()
