@@ -11,8 +11,8 @@ COPY pyproject.toml uv.lock ./
 # Install dependencies using uv from the lockfile
 RUN uv sync --frozen --only-group api
 
-# Copy model artifacts (scaler and feature names)
-COPY data/processed/scaler.pkl data/processed/feature_names.pkl ./artifacts/
+# Copy model parameters (JSON — no sklearn/numpy needed)
+COPY data/processed/model_params.json ./artifacts/
 
 # Copy API application files
 COPY api/src/ ./
