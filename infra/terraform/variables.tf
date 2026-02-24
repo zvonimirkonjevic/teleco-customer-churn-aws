@@ -111,7 +111,7 @@ variable "ecs_task_sg_ingress_protocol" {
 variable "container_port" {
   description = "Port the container listens on"
   type = number
-  default = 5000
+  default = 8501
 }
 
 # ECS Cluster configuration variables
