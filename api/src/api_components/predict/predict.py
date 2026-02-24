@@ -4,6 +4,7 @@ import os
 
 import boto3
 import numpy as np
+from loguru import logger
 
 from config import AWS_REGION, CHURN_THRESHOLD, SAGEMAKER_ENDPOINT_NAME
 
@@ -146,11 +147,13 @@ def make_prediction(payload: dict) -> dict:
     dict
         ``{"churn_probability": float, "will_churn": bool}``
     """
+    logger.info("Processing prediction request")
     client = _get_sagemaker_client()
     feature_vector = _preprocess(payload)
 
     # SageMaker built-in XGBoost expects CSV format
     csv_body = ",".join(str(v) for v in feature_vector)
+    logger.debug("Feature vector length: {}", len(feature_vector))
 
     response = client.invoke_endpoint(
         EndpointName=SAGEMAKER_ENDPOINT_NAME,
@@ -158,8 +161,13 @@ def make_prediction(payload: dict) -> dict:
         Body=csv_body,
     )
 
-    result = json.loads(response["Body"].read().decode("utf-8"))
+    raw_body = response["Body"].read().decode("utf-8")
+    logger.debug("SageMaker raw response: {}", raw_body)
+
+    result = json.loads(raw_body)
     churn_probability = float(result)
+
+    logger.info("Prediction complete: probability={:.4f}, churn={}", churn_probability, churn_probability >= CHURN_THRESHOLD)
 
     return {
         "churn_probability": churn_probability,
