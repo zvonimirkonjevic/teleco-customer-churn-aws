@@ -1,0 +1,73 @@
+{
+  "feature_names": [
+    "gender",
+    "SeniorCitizen",
+    "Partner",
+    "Dependents",
+    "tenure",
+    "PhoneService",
+    "PaperlessBilling",
+    "MonthlyCharges",
+    "TotalCharges",
+    "AvgMonthlySpend",
+    "TotalServices",
+    "MultipleLines_No",
+    "MultipleLines_No_phone_service",
+    "MultipleLines_Yes",
+    "InternetService_DSL",
+    "InternetService_Fiber_optic",
+    "InternetService_No",
+    "OnlineSecurity_No",
+    "OnlineSecurity_No_internet_service",
+    "OnlineSecurity_Yes",
+    "OnlineBackup_No",
+    "OnlineBackup_No_internet_service",
+    "OnlineBackup_Yes",
+    "DeviceProtection_No",
+    "DeviceProtection_No_internet_service",
+    "DeviceProtection_Yes",
+    "TechSupport_No",
+    "TechSupport_No_internet_service",
+    "TechSupport_Yes",
+    "StreamingTV_No",
+    "StreamingTV_No_internet_service",
+    "StreamingTV_Yes",
+    "StreamingMovies_No",
+    "StreamingMovies_No_internet_service",
+    "StreamingMovies_Yes",
+    "Contract_Month_to_month",
+    "Contract_One_year",
+    "Contract_Two_year",
+    "PaymentMethod_Bank_transfer_automatic",
+    "PaymentMethod_Credit_card_automatic",
+    "PaymentMethod_Electronic_check",
+    "PaymentMethod_Mailed_check",
+    "TenureGroup_0_1yr",
+    "TenureGroup_1_2yr",
+    "TenureGroup_2_4yr",
+    "TenureGroup_4_6yr"
+  ],
+  "scaler": {
+    "features": [
+      "tenure",
+      "MonthlyCharges",
+      "TotalCharges",
+      "AvgMonthlySpend",
+      "TotalServices"
+    ],
+    "means": [
+      32.37114865824223,
+      64.76169246059918,
+      2279.798991906858,
+      59.055476885598296,
+      2.0379099815419566
+    ],
+    "stds": [
+      24.55773742286344,
+      30.087910854936975,
+      2266.569243468577,
+      30.50962892952409,
+      1.8475505016147948
+    ]
+  }
+}
