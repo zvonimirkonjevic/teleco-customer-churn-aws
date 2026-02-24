@@ -33,6 +33,3 @@ MODEL_AUC: str = "0.84"
 PAGE_TITLE: str = "Telco Customer Churn Predictor"
 PAGE_LAYOUT: str = "centered"
 SIDEBAR_STATE: str = "expanded"
-
-# Churn probability threshold (0-1) — above this the customer is "High Risk"
-CHURN_THRESHOLD: float = 0.5
