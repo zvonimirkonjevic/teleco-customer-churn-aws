@@ -3,17 +3,13 @@ FROM python:3.13-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install uv early (small layer, rarely changes)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Copy uv project files from the repository root
 COPY pyproject.toml uv.lock ./
 
 # Install dependencies using uv from the lockfile
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN uv sync --frozen --only-group app
 
 # Copy application files
@@ -24,7 +20,7 @@ COPY app/.streamlit/ .streamlit/
 EXPOSE 8501
 
 # Health check
-HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
+HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')" || exit 1
 
-# Run the application
-CMD ["uv", "run", "streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# Run the application using the venv directly (skips uv overhead)
+CMD [".venv/bin/streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
