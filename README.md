@@ -62,7 +62,7 @@ All cloud resources defined in Terraform with 10 modules, S3-backed remote state
 | **API** | FastAPI + Mangum, Pydantic validation, loguru logging |
 | **Front-end** | Streamlit on ECS Fargate |
 | **Containerization** | Docker, docker-compose, ECR |
-| **Packaging** | uv + pyproject.toml + lockfile, dependency groups (`app`, `api`) |
+| **Packaging** | uv + pyproject.toml + lockfile, dependency groups (`app`, `api`, `notebooks`) |
 | **Runtime** | Python 3.13 |
 
 ## Repository Structure
@@ -96,7 +96,7 @@ teleco-customer-churn-aws/
 ```bash
 # 1. Clone & install
 git clone <repo-url> && cd teleco-customer-churn-aws
-uv sync
+uv sync --all-groups
 
 # 2. Provision infrastructure
 cd infra/terraform && terraform init && terraform apply && cd ../..

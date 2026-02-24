@@ -92,7 +92,7 @@ docker compose up -d
 # Health check: curl http://localhost:8501/_stcore/health
 
 # Option B: uv (from project root)
-uv sync
+uv sync --group app
 uv run streamlit run app/app.py
 ```
 

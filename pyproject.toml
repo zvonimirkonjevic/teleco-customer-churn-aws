@@ -1,28 +1,15 @@
 [project]
 name = "teleco-customer-churn-aws"
 version = "0.1.0"
-description = "Add your description here"
+description = "Telco customer churn prediction platform using XGBoost on AWS (SageMaker, Lambda, ECS Fargate)"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "boto3>=1.42.45",
-    "fastapi>=0.115.0",
-    "imbalanced-learn>=0.14.1",
-    "ipykernel>=7.2.0",
-    "loguru>=0.7.0",
-    "mangum>=0.19.0",
-    "numpy>=1.26.0",
-    "pandas>=2.3.3",
-    "requests>=2.32.5",
-    "sagemaker>=3.4.0",
-    "scikit-learn>=1.8.0",
-    "seaborn>=0.13.2",
-    "streamlit>=1.54.0",
-    "uvicorn>=0.34.0",
-]
+dependencies = []
 
 [dependency-groups]
 app = [
+    "boto3>=1.42.45",
+    "botocore>=1.42.45",
     "requests>=2.32.5",
     "streamlit>=1.54.0",
 ]
@@ -32,4 +19,14 @@ api = [
     "loguru>=0.7.0",
     "mangum>=0.19.0",
     "uvicorn>=0.34.0",
+]
+notebooks = [
+    "boto3>=1.42.45",
+    "imbalanced-learn>=0.14.1",
+    "ipykernel>=7.2.0",
+    "numpy>=1.26.0",
+    "pandas>=2.3.3",
+    "sagemaker>=3.4.0",
+    "scikit-learn>=1.8.0",
+    "seaborn>=0.13.2",
 ]

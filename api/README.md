@@ -118,7 +118,7 @@ docker compose up -d          # API on :8000, Streamlit on :8501
 curl http://localhost:8000/health
 
 # Option B: uv (from project root)
-uv sync
+uv sync --group api
 uv run uvicorn api.src.main:app --host 0.0.0.0 --port 8000
 ```
 

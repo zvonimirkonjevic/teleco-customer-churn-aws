@@ -3644,22 +3644,6 @@ wheels = [
 name = "teleco-customer-churn-aws"
 version = "0.1.0"
 source = { virtual = "." }
-dependencies = [
-    { name = "boto3" },
-    { name = "fastapi" },
-    { name = "imbalanced-learn" },
-    { name = "ipykernel" },
-    { name = "loguru" },
-    { name = "mangum" },
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "requests" },
-    { name = "sagemaker" },
-    { name = "scikit-learn" },
-    { name = "seaborn" },
-    { name = "streamlit" },
-    { name = "uvicorn" },
-]
 
 [package.dev-dependencies]
 api = [
@@ -3667,32 +3651,26 @@ api = [
     { name = "fastapi" },
     { name = "loguru" },
     { name = "mangum" },
-    { name = "numpy" },
-    { name = "scikit-learn" },
     { name = "uvicorn" },
 ]
 app = [
+    { name = "boto3" },
+    { name = "botocore" },
     { name = "requests" },
     { name = "streamlit" },
 ]
+notebooks = [
+    { name = "boto3" },
+    { name = "imbalanced-learn" },
+    { name = "ipykernel" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "sagemaker" },
+    { name = "scikit-learn" },
+    { name = "seaborn" },
+]
 
 [package.metadata]
-requires-dist = [
-    { name = "boto3", specifier = ">=1.42.45" },
-    { name = "fastapi", specifier = ">=0.115.0" },
-    { name = "imbalanced-learn", specifier = ">=0.14.1" },
-    { name = "ipykernel", specifier = ">=7.2.0" },
-    { name = "loguru", specifier = ">=0.7.0" },
-    { name = "mangum", specifier = ">=0.19.0" },
-    { name = "numpy", specifier = ">=1.26.0" },
-    { name = "pandas", specifier = ">=2.3.3" },
-    { name = "requests", specifier = ">=2.32.5" },
-    { name = "sagemaker", specifier = ">=3.4.0" },
-    { name = "scikit-learn", specifier = ">=1.8.0" },
-    { name = "seaborn", specifier = ">=0.13.2" },
-    { name = "streamlit", specifier = ">=1.54.0" },
-    { name = "uvicorn", specifier = ">=0.34.0" },
-]
 
 [package.metadata.requires-dev]
 api = [
@@ -3700,13 +3678,23 @@ api = [
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "loguru", specifier = ">=0.7.0" },
     { name = "mangum", specifier = ">=0.19.0" },
-    { name = "numpy", specifier = ">=1.26.0" },
-    { name = "scikit-learn", specifier = ">=1.8.0" },
     { name = "uvicorn", specifier = ">=0.34.0" },
 ]
 app = [
+    { name = "boto3", specifier = ">=1.42.45" },
+    { name = "botocore", specifier = ">=1.42.45" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "streamlit", specifier = ">=1.54.0" },
+]
+notebooks = [
+    { name = "boto3", specifier = ">=1.42.45" },
+    { name = "imbalanced-learn", specifier = ">=0.14.1" },
+    { name = "ipykernel", specifier = ">=7.2.0" },
+    { name = "numpy", specifier = ">=1.26.0" },
+    { name = "pandas", specifier = ">=2.3.3" },
+    { name = "sagemaker", specifier = ">=3.4.0" },
+    { name = "scikit-learn", specifier = ">=1.8.0" },
+    { name = "seaborn", specifier = ">=0.13.2" },
 ]
 
 [[package]]
