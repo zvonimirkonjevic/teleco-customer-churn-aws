@@ -56,7 +56,8 @@ def _preprocess(payload: dict) -> list[float]:
     monthly = payload["monthlyCharges"]
     total = payload["totalCharges"]
 
-    # Feature engineering
+    # Feature engineering — mirrors training: TotalCharges / (tenure + 1)
+    # The +1 avoids division by zero for new customers (tenure == 0)
     avg_monthly_spend = total / (tenure + 1)
 
     services = [
@@ -122,7 +123,10 @@ def _preprocess(payload: dict) -> list[float]:
 
     # Apply standard scaling: (value - mean) / std
     for feat, mean, std in zip(SCALED_FEATURES, SCALER_MEANS, SCALER_STDS):
-        features[feat] = (features[feat] - mean) / std
+        if std == 0:
+            features[feat] = 0.0
+        else:
+            features[feat] = (features[feat] - mean) / std
 
     # Return features in the exact order the model expects
     return [features[f] for f in FEATURE_NAMES]
