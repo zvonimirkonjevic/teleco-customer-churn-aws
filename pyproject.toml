@@ -1,5 +1,5 @@
 [project]
-name = "teleco-customer-churn-aws"
+name = "telco-customer-churn-aws"
 version = "0.1.0"
 description = "Telco customer churn prediction platform using XGBoost on AWS (SageMaker, Lambda, ECS Fargate)"
 readme = "README.md"

@@ -1,4 +1,4 @@
-resource "aws_ecs_cluster" "teleco_customer_churn_cluster" {
+resource "aws_ecs_cluster" "telco_customer_churn_cluster" {
   name = "${var.name_prefix}-cluster"
   
   setting {
@@ -12,8 +12,8 @@ resource "aws_ecs_cluster" "teleco_customer_churn_cluster" {
   }
 }
 
-resource "aws_ecs_cluster_capacity_providers" "teleco_customer_churn_capacity_providers" {
-  cluster_name = aws_ecs_cluster.teleco_customer_churn_cluster.name
+resource "aws_ecs_cluster_capacity_providers" "telco_customer_churn_capacity_providers" {
+  cluster_name = aws_ecs_cluster.telco_customer_churn_cluster.name
   capacity_providers = var.capacity_providers
 
   dynamic "default_capacity_provider_strategy" {

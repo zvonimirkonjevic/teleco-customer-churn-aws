@@ -26,7 +26,7 @@ variable "iam_role_arn" {
 variable "name_prefix" {
     type        = string
     description = "Prefix for naming SageMaker resources"
-    default     = "teleco-customer-churn"
+    default     = "telco-customer-churn"
 }
 
 variable "xgboost_image_tag" {

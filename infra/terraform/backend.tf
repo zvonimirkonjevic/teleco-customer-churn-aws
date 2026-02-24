@@ -7,10 +7,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "teleco-churn-terraform-state"
+    bucket         = "telco-customer-churn-terraform-state"
     key            = "global/s3/terraform.tfstate"
     region         = "eu-central-1"
     encrypt        = true
-    profile        = "teleco-churn-terraform"
+    profile        = "telco-churn-terraform"
   }
 }

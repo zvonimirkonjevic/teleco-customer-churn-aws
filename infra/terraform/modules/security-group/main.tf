@@ -1,4 +1,4 @@
-resource "aws_security_group" "teleco-customer-churn-security-group" {
+resource "aws_security_group" "telco-customer-churn-security-group" {
     name       = var.name
     vpc_id      = var.vpc_id
 

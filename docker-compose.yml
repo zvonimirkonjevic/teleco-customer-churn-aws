@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SAGEMAKER_ENDPOINT_NAME=teleco-customer-churn-xgboost-endpoint
+      - SAGEMAKER_ENDPOINT_NAME=telco-customer-churn-xgboost-endpoint
       - AWS_REGION=eu-central-1
       - CHURN_THRESHOLD=0.5
     env_file:
@@ -24,7 +24,7 @@ services:
     build:
       context: .
       dockerfile: app/environment/Dockerfile.local
-    container_name: teleco-customer-churn-app
+    container_name: telco-customer-churn-app
     ports:
       - "8501:8501"
     volumes:

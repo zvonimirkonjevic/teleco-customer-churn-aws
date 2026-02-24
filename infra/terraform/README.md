@@ -9,7 +9,7 @@ terraform/
 ├── backend.tf                          # required_providers + S3 remote state
 ├── main.tf                             # Root module — orchestrates all modules
 ├── variables.tf                        # Root-level variables
-├── providers.tf                        # AWS provider alias (eu-central, profile: teleco-churn-terraform)
+├── providers.tf                        # AWS provider alias (eu-central, profile: telco-churn-terraform)
 ├── terraform.tfvars                    # Variable values for this deployment
 └── modules/
     ├── iam/                            # SageMaker + ECS + Lambda IAM roles and policies
@@ -59,11 +59,11 @@ terraform/
 | Setting | Value |
 |---|---|
 | Backend | `s3` |
-| Bucket | `teleco-churn-terraform-state` |
+| Bucket | `telco-churn-terraform-state` |
 | State key | `global/s3/terraform.tfstate` |
 | Region | `eu-central-1` |
 | Encryption | `true` (SSE-S3) |
-| AWS profile | `teleco-churn-terraform` |
+| AWS profile | `telco-churn-terraform` |
 | Provider constraint | `hashicorp/aws ~> 5.0` |
 
 ## Modules
@@ -116,14 +116,14 @@ Provisions the network layer: VPC, subnets, internet gateway, NAT gateways, and 
 
 | Resource | Type | Detail |
 |---|---|---|
-| `teleco-customer-churn-vpc` | `aws_vpc` | DNS support & hostnames enabled |
-| `teleco-customer-churn-public-subnet` | `aws_subnet` | One per AZ |
-| `teleco-customer-churn-private-subnet` | `aws_subnet` | One per AZ |
-| `teleco-customer-churn-internet-gateway` | `aws_internet_gateway` | Attached to VPC |
-| `teleco-customer-churn-eip` | `aws_eip` | One per AZ, allocated for NAT gateways |
-| `teleco-customer-churn-nat-gateway` | `aws_nat_gateway` | One per AZ in public subnets, enables private subnet outbound internet |
-| `teleco-customer-churn-public-route-table` | `aws_route_table` | Routes `0.0.0.0/0` to internet gateway |
-| `teleco-customer-churn-private-route-table` | `aws_route_table` | Routes `0.0.0.0/0` to NAT gateway |
+| `telco-customer-churn-vpc` | `aws_vpc` | DNS support & hostnames enabled |
+| `telco-customer-churn-public-subnet` | `aws_subnet` | One per AZ |
+| `telco-customer-churn-private-subnet` | `aws_subnet` | One per AZ |
+| `telco-customer-churn-internet-gateway` | `aws_internet_gateway` | Attached to VPC |
+| `telco-customer-churn-eip` | `aws_eip` | One per AZ, allocated for NAT gateways |
+| `telco-customer-churn-nat-gateway` | `aws_nat_gateway` | One per AZ in public subnets, enables private subnet outbound internet |
+| `telco-customer-churn-public-route-table` | `aws_route_table` | Routes `0.0.0.0/0` to internet gateway |
+| `telco-customer-churn-private-route-table` | `aws_route_table` | Routes `0.0.0.0/0` to NAT gateway |
 
 **Variables:**
 
@@ -153,7 +153,7 @@ Reusable security group module with dynamic ingress and egress rules. Default eg
 
 | Resource | Type | Detail |
 |---|---|---|
-| `teleco-customer-churn-security-group` | `aws_security_group` | Dynamic ingress/egress blocks from variable-defined rule lists |
+| `telco-customer-churn-security-group` | `aws_security_group` | Dynamic ingress/egress blocks from variable-defined rule lists |
 
 **Variables:**
 
@@ -180,7 +180,7 @@ Provisions the serverless inference stack:
 | `xgboost` | `aws_sagemaker_prebuilt_ecr_image` (data) | `sagemaker-xgboost:1.7-1` container image |
 | `xgboost_model` | `aws_sagemaker_model` | Model artifact loaded from S3 (`model_data_uri`) |
 | `xgboost_endpoint_config` | `aws_sagemaker_endpoint_configuration` | Single `AllTraffic` variant, serverless config (`max_concurrency`, `memory_size_in_mb`) |
-| `xgboost_endpoint` | `aws_sagemaker_endpoint` | Serverless endpoint: `teleco-customer-churn-xgboost-endpoint` |
+| `xgboost_endpoint` | `aws_sagemaker_endpoint` | Serverless endpoint: `telco-customer-churn-xgboost-endpoint` |
 
 **Variables:**
 
@@ -266,9 +266,9 @@ Application Load Balancer with HTTP listener and IP-based target group.
 
 | Resource | Type | Detail |
 |---|---|---|
-| `teleco_customer_churn_alb` | `aws_lb` | Application type, public subnets, idle timeout 60s |
-| `teleco_customer_churn_target_group` | `aws_lb_target_group` | IP target type, HTTP health check (path: `/_stcore/health`, interval: 30s, healthy: 2, unhealthy: 3) |
-| `teleco_customer_churn_listener` | `aws_lb_listener` | Port 80 HTTP, forwards to target group |
+| `telco_customer_churn_alb` | `aws_lb` | Application type, public subnets, idle timeout 60s |
+| `telco_customer_churn_target_group` | `aws_lb_target_group` | IP target type, HTTP health check (path: `/_stcore/health`, interval: 30s, healthy: 2, unhealthy: 3) |
+| `telco_customer_churn_listener` | `aws_lb_listener` | Port 80 HTTP, forwards to target group |
 
 **Variables:**
 
@@ -294,8 +294,8 @@ ECS cluster with Fargate capacity providers.
 
 | Resource | Type | Detail |
 |---|---|---|
-| `teleco_customer_churn_cluster` | `aws_ecs_cluster` | Container Insights toggle via variable |
-| `teleco_customer_churn_capacity_providers` | `aws_ecs_cluster_capacity_providers` | Dynamic capacity provider strategy (FARGATE, FARGATE_SPOT) |
+| `telco_customer_churn_cluster` | `aws_ecs_cluster` | Container Insights toggle via variable |
+| `telco_customer_churn_capacity_providers` | `aws_ecs_cluster_capacity_providers` | Dynamic capacity provider strategy (FARGATE, FARGATE_SPOT) |
 
 **Variables:**
 
@@ -319,7 +319,7 @@ Fargate task definition with container health check and CloudWatch Logs.
 
 | Resource | Type | Detail |
 |---|---|---|
-| `teleco-customer-churn-prediction` | `aws_ecs_task_definition` | Fargate, `awsvpc` network mode, health check (`curl` on container port), `awslogs` log driver |
+| `telco-customer-churn-prediction` | `aws_ecs_task_definition` | Fargate, `awsvpc` network mode, health check (`curl` on container port), `awslogs` log driver |
 
 **Variables:**
 
@@ -351,7 +351,7 @@ ECS service with ALB integration, private subnet placement, and deployment circu
 
 | Resource | Type | Detail |
 |---|---|---|
-| `teleco-customer-churn-service` | `aws_ecs_service` | Fargate launch type, private subnets (no public IP), ALB target group, circuit breaker with rollback |
+| `telco-customer-churn-service` | `aws_ecs_service` | Fargate launch type, private subnets (no public IP), ALB target group, circuit breaker with rollback |
 
 **Variables:**
 
@@ -390,4 +390,4 @@ terraform apply         # Provision resources
 terraform destroy       # Tear down all managed resources
 ```
 
-> **Note:** Requires the `teleco-churn-terraform` AWS CLI profile to be configured locally.
+> **Note:** Requires the `telco-churn-terraform` AWS CLI profile to be configured locally.

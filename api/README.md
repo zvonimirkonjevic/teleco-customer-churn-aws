@@ -126,7 +126,7 @@ uv run uvicorn api.src.main:app --host 0.0.0.0 --port 8000
 
 | Setting | Source | Default |
 |---|---|---|
-| `SAGEMAKER_ENDPOINT_NAME` | Environment variable | `teleco-customer-churn-xgboost-endpoint` |
+| `SAGEMAKER_ENDPOINT_NAME` | Environment variable | `telco-customer-churn-xgboost-endpoint` |
 | `AWS_REGION` | Environment variable | `eu-central-1` |
 | `CHURN_THRESHOLD` | Environment variable | `0.5` |
 | `ARTIFACTS_DIR` | Environment variable | `/var/task/artifacts` (Lambda), `/app/artifacts` (local) |

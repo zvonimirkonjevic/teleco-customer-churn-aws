@@ -3,7 +3,7 @@ resource "aws_cloudwatch_log_group" "ecs" {
   retention_in_days = 30
 }
 
-resource "aws_ecs_task_definition" "teleco-customer-churn-prediction" {
+resource "aws_ecs_task_definition" "telco-customer-churn-prediction" {
   family                   = var.family_name
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.cpu

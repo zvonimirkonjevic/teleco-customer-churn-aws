@@ -36,7 +36,7 @@ All cloud resources defined in Terraform with 10 modules, S3-backed remote state
 | `ecs-task-definition` | Fargate task definition, container health check, CloudWatch Logs |
 | `ecs-service` | ECS service, ALB integration, deployment circuit breaker with rollback |
 
-**State:** S3 backend (`teleco-churn-terraform-state`), SSE-S3 encryption, profile `teleco-churn-terraform`.
+**State:** S3 backend (`telco-churn-terraform-state`), SSE-S3 encryption, profile `telco-churn-terraform`.
 
 ## Key Design Decisions
 
@@ -68,7 +68,7 @@ All cloud resources defined in Terraform with 10 modules, S3-backed remote state
 ## Repository Structure
 
 ```
-teleco-customer-churn-aws/
+telco-customer-churn-aws/
 ├── api/                        # FastAPI prediction API (Lambda)
 │   ├── src/                    #   main.py, config.py, api_components/predict/
 │   └── environment/            #   Dockerfile.lambda, Dockerfile.local
@@ -91,11 +91,11 @@ teleco-customer-churn-aws/
 
 ## Getting Started
 
-**Prerequisites:** AWS account, AWS CLI (profile: `teleco-churn-terraform`), Python >= 3.12, [uv](https://docs.astral.sh/uv/), Terraform, Docker.
+**Prerequisites:** AWS account, AWS CLI (profile: `telco-churn-terraform`), Python >= 3.12, [uv](https://docs.astral.sh/uv/), Terraform, Docker.
 
 ```bash
 # 1. Clone & install
-git clone <repo-url> && cd teleco-customer-churn-aws
+git clone <repo-url> && cd telco-customer-churn-aws
 uv sync --all-groups
 
 # 2. Provision infrastructure

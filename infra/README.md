@@ -10,7 +10,7 @@ infra/
     ├── backend.tf                          # required_providers (AWS ~> 5.0), S3 remote state
     ├── main.tf                             # Root module entry point — delegates to modules
     ├── variables.tf                        # Root-level input variables
-    ├── providers.tf                        # AWS provider: eu-central-1, profile teleco-churn-terraform
+    ├── providers.tf                        # AWS provider: eu-central-1, profile telco-churn-terraform
     ├── terraform.tfvars                    # Deployment-specific values
     ├── .terraform.lock.hcl                 # Provider dependency lock file
     └── modules/
@@ -101,11 +101,11 @@ infra/
 
 | Property | Value |
 |---|---|
-| Backend | S3 (`teleco-churn-terraform-state`) |
+| Backend | S3 (`telco-churn-terraform-state`) |
 | State key | `global/s3/terraform.tfstate` |
 | Encryption | SSE-S3 enabled |
 | Locking | None (single-developer project) |
-| AWS profile | `teleco-churn-terraform` |
+| AWS profile | `telco-churn-terraform` |
 
 ## Architecture Decisions
 
@@ -120,7 +120,7 @@ infra/
 | **Serverless SageMaker endpoint** | Cost-optimized for showcase/demo — scales to zero when idle |
 | **Single environment** | No multi-env (dev/staging/prod) overhead — single flat root |
 | **S3 remote state** | Encrypted, durable state storage; no DynamoDB lock table (single developer) |
-| **Named AWS profile** | Credential isolation via dedicated `teleco-churn-terraform` profile |
+| **Named AWS profile** | Credential isolation via dedicated `telco-churn-terraform` profile |
 | **Prebuilt SageMaker image** | Uses AWS-managed XGBoost container (`1.7-1`) — no custom Docker build required |
 | **NAT gateway per AZ** | Each private subnet gets its own NAT gateway for outbound internet — avoids single-AZ bottleneck |
 | **Deployment circuit breaker** | ECS service automatically rolls back failed deployments |
@@ -137,16 +137,16 @@ terraform destroy       # Tear down all managed resources
 
 ## Naming Convention
 
-All resources use prefix: `teleco-customer-churn-`
+All resources use prefix: `telco-customer-churn-`
 
 | Resource | Name |
 |---|---|
-| SageMaker Model | `teleco-customer-churn-xgboost-model` |
-| Endpoint Config | `teleco-customer-churn-xgboost-endpoint-config` |
-| Endpoint | `teleco-customer-churn-xgboost-endpoint` |
-| Lambda Function | `teleco-customer-churn-prediction-api` |
-| API Gateway | `teleco-customer-churn-prediction-api` |
-| IAM Roles | `teleco-customer-churn-{sagemaker-execution,ecs-execution,ecs-task,lambda-execution}-role` |
-| ALB | `teleco-customer-churn-alb` |
-| ECS Cluster | `teleco-customer-churn-cluster` |
-| ECS Service | `teleco-customer-churn-service` |
+| SageMaker Model | `telco-customer-churn-xgboost-model` |
+| Endpoint Config | `telco-customer-churn-xgboost-endpoint-config` |
+| Endpoint | `telco-customer-churn-xgboost-endpoint` |
+| Lambda Function | `telco-customer-churn-prediction-api` |
+| API Gateway | `telco-customer-churn-prediction-api` |
+| IAM Roles | `telco-customer-churn-{sagemaker-execution,ecs-execution,ecs-task,lambda-execution}-role` |
+| ALB | `telco-customer-churn-alb` |
+| ECS Cluster | `telco-customer-churn-cluster` |
+| ECS Service | `telco-customer-churn-service` |

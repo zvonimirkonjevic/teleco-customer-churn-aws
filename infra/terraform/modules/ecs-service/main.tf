@@ -1,4 +1,4 @@
-resource "aws_ecs_service" "teleco-customer-churn-service" {
+resource "aws_ecs_service" "telco-customer-churn-service" {
     name           = "${var.name_prefix}-service"
     cluster        = var.cluster_id
     task_definition = var.task_definition_arn

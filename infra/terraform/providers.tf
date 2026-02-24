@@ -1,4 +1,4 @@
 provider "aws" {
     region  = "eu-central-1"
-    profile = "teleco-churn-terraform"
+    profile = "telco-churn-terraform"
 }
