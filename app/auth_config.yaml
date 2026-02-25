@@ -1,0 +1,16 @@
+cookie:
+  expiry_days: 30
+  key: 7889e0149c8ba37e5c7ab8331d651582
+  name: telco_churn_auth
+
+credentials:
+  usernames:
+    admin:
+      email: admin@telco-churn.local
+      failed_login_attempts: 0
+      first_name: Admin
+      last_name: User
+      logged_in: false
+      password: $2b$12$0Lcg0OvTh/dBvH5aLCC8/ut5.WPJC0knzt3DQxDbgYQadcAUuvnua
+      roles:
+        - admin
