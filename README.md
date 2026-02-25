@@ -43,6 +43,7 @@ All cloud resources defined in Terraform with 10 modules, S3-backed remote state
 | Decision | Rationale |
 |---|---|
 | Lambda + API Gateway for prediction API | Decouples preprocessing from the UI; scales independently; avoids granting ECS tasks SageMaker permissions |
+| `streamlit-authenticator` login gate | Application-level authentication with bcrypt-hashed credentials and persistent cookie sessions |
 | SigV4-signed requests + AWS_IAM auth | API Gateway requires IAM-authenticated requests — prevents unauthorized access if the API URL is discovered |
 | Pure Python preprocessing (no sklearn/numpy) | Eliminates heavy ML dependencies from Lambda — cold starts ~1s vs ~10s, image ~200MB vs ~1.5GB |
 | Serverless SageMaker endpoint | Scales to zero when idle — cost-optimized for demo/showcase workloads |
@@ -61,7 +62,7 @@ All cloud resources defined in Terraform with 10 modules, S3-backed remote state
 | **Networking** | VPC, ALB, API Gateway (HTTP API), NAT gateways |
 | **ML** | SageMaker XGBoost 1.7-1 (best F1: 0.627, AUC-ROC: 0.840 across 5 models evaluated) |
 | **API** | FastAPI + Mangum, Pydantic validation, loguru logging |
-| **Front-end** | Streamlit on ECS Fargate |
+| **Front-end** | Streamlit on ECS Fargate, `streamlit-authenticator` login |
 | **Containerization** | Docker, docker-compose, ECR |
 | **Packaging** | uv + pyproject.toml + lockfile, dependency groups (`app`, `api`, `notebooks`) |
 | **Runtime** | Python 3.13 |
