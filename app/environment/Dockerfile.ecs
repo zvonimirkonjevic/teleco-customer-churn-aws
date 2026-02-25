@@ -13,7 +13,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --only-group app
 
 # Copy application files
-COPY app/app.py app/config.py app/components.py app/predict.py ./
+COPY app/app.py app/config.py app/components.py app/predict.py app/auth_config.yaml ./
 COPY app/.streamlit/config.toml .streamlit/
 
 # Create non-root user
