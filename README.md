@@ -4,18 +4,7 @@ End-to-end ML platform on AWS for predicting customer churn. Three-tier serverle
 
 ## Architecture
 
-```
-┌──────────┐     ┌───────┐     ┌──────────────┐     ┌─────────────┐     ┌──────────┐     ┌──────────────────────────┐
-│ Client   │────▶│  ALB  │────▶│  ECS Fargate │────▶│ API Gateway │────▶│  Lambda  │────▶│   SageMaker Endpoint     │
-│          │HTTP │(HTTP) │     │ (Streamlit)  │HTTP │ (HTTP API)  │     │(FastAPI) │ IAM │  XGBoost · Serverless    │
-└──────────┘     └───────┘     └──────┬───────┘     └─────────────┘     └────┬─────┘     └────────────┬─────────────┘
-                                      │                                      │                        │
-                                      ▼                                      ▼                        ▼
-                               ┌──────────────┐                       ┌──────────────┐         ┌─────────────┐
-                               │  CloudWatch  │                       │  CloudWatch  │         │  S3 Bucket  │
-                               │    Logs      │                       │    Logs      │         │ model.tar.gz│
-                               └──────────────┘                       └──────────────┘         └─────────────┘
-```
+![AWS Architecture](data/images/aws_architecture_diagram.png)
 
 **Request flow:** Client → ALB → ECS Fargate (Streamlit) → SigV4-signed POST → API Gateway `/v1` (AWS_IAM auth) → Lambda (FastAPI + Mangum) → preprocesses 19 raw features into 46-feature CSV vector → SageMaker XGBoost endpoint → churn probability.
 
