@@ -64,7 +64,7 @@ infra/
 | `iam` | SageMaker full access | `aws_iam_role_policy_attachment` | `AmazonSageMakerFullAccess` |
 | `iam` | S3 read access | `aws_iam_role_policy` | `s3:GetObject`, `s3:ListBucket` on data bucket |
 | `iam` | ECS execution role | `aws_iam_role` | Trust: `ecs-tasks.amazonaws.com`; `AmazonECSTaskExecutionRolePolicy` |
-| `iam` | ECS task role | `aws_iam_role` | Trust: `ecs-tasks.amazonaws.com`; custom inline policies |
+| `iam` | ECS task role | `aws_iam_role` | Trust: `ecs-tasks.amazonaws.com`; S3 read + `execute-api:Invoke` (for SigV4-signed API Gateway calls) |
 | `iam` | Lambda execution role | `aws_iam_role` | Trust: `lambda.amazonaws.com`; CloudWatch Logs + ECR pull |
 | `iam` | CloudWatch policy | `aws_iam_role_policy_attachment` | `CloudWatchLogsFullAccess` (conditional) |
 | `iam` | SSM policy | `aws_iam_role_policy_attachment` | `AmazonSSMReadOnlyAccess` (conditional) |
@@ -76,7 +76,7 @@ infra/
 | `lambda` | Lambda function | `aws_lambda_function` | Container image from ECR, 1024MB memory, 30s timeout |
 | `api-gateway` | HTTP API | `aws_apigatewayv2_api` | Protocol: HTTP |
 | `api-gateway` | Lambda integration | `aws_apigatewayv2_integration` | AWS_PROXY, payload format 2.0 |
-| `api-gateway` | Default route | `aws_apigatewayv2_route` | `$default` catch-all (FastAPI handles routing) |
+| `api-gateway` | Default route | `aws_apigatewayv2_route` | `$default` catch-all, `authorization_type = "AWS_IAM"` (SigV4-signed requests required) |
 | `api-gateway` | Stage | `aws_apigatewayv2_stage` | `/v1`, auto-deploy enabled |
 | `api-gateway` | Lambda permission | `aws_lambda_permission` | Allows API Gateway to invoke Lambda |
 | `vpc` | VPC | `aws_vpc` | DNS support & hostnames enabled |
@@ -115,6 +115,7 @@ infra/
 | **Lambda + API Gateway** | Decouples preprocessing/prediction API from the Streamlit UI; scales independently; avoids giving ECS tasks SageMaker permissions |
 | **HTTP API (not REST API)** | Lower latency and cost than REST API; auto-deploy stages; payload format 2.0 |
 | **`$default` catch-all route** | FastAPI handles all routing internally via Mangum — no need to duplicate route definitions in API Gateway |
+| **AWS_IAM authorization** | API Gateway requires SigV4-signed requests — prevents unauthorized access; ECS task role has `execute-api:Invoke` permission |
 | **ECS Fargate** | Managed serverless compute for running the Streamlit container — no EC2 instances to manage |
 | **ALB** | Public HTTP entry point with health checks; routes traffic to ECS tasks in private subnets |
 | **Serverless SageMaker endpoint** | Cost-optimized for showcase/demo — scales to zero when idle |

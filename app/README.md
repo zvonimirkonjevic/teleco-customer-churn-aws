@@ -1,33 +1,32 @@
 # App
 
-Streamlit web application for real-time customer churn prediction. Communicates with the FastAPI prediction API via HTTP (API Gateway → Lambda in production, direct container in local dev).
+Streamlit web application for real-time customer churn prediction. Communicates with the FastAPI prediction API via SigV4-signed HTTP requests (API Gateway with AWS_IAM authorization → Lambda in production, direct container in local dev).
 
 ## Module Structure
 
 ```
 app/
 ├── app.py                    # Entry point — page config, layout, PredictionError handling
-├── config.py                 # Centralized settings (API_ENDPOINT, CHURN_THRESHOLD, model metadata)
-├── predict.py                # HTTP client: make_prediction(payload) → dict, PredictionError
+├── config.py                 # Centralized settings (API_ENDPOINT, model metadata)
+├── predict.py                # SigV4-signed API client: make_prediction(payload) → dict, PredictionError
 ├── components.py             # Pure UI functions (no business logic)
 ├── .streamlit/
-│   ├── config.toml           # Streamlit theme & server settings
-│   └── secrets.toml.example  # Template — copy to secrets.toml, set API_ENDPOINT
+│   └── config.toml           # Streamlit theme & server settings
 └── environment/
     ├── Dockerfile.ecs        # ECS Fargate container image
     ├── Dockerfile.local      # python:3.13-slim, uv sync --frozen --only-group app
     └── .dockerignore
 ```
 
-Root-level `docker-compose.yml` builds from `app/environment/Dockerfile.local` and mounts `secrets.toml` read-only. The Streamlit app depends on the `prediction-api` service.
+Root-level `docker-compose.yml` builds from `app/environment/Dockerfile.local`. The Streamlit app depends on the `prediction-api` service.
 
 ## Component Responsibilities
 
 | Module | Responsibility | Key exports |
 |---|---|---|
 | `app.py` | Page config (`set_page_config`), wires components, catches `PredictionError` and generic exceptions | — |
-| `config.py` | Reads `API_ENDPOINT` from env var (default: `http://prediction-api:8000`); defines `CHURN_THRESHOLD` (0.5), model metadata | Constants |
-| `predict.py` | `make_prediction(payload: dict) → dict` — POST to prediction API (60s timeout), raises `PredictionError` with status-specific messages | `make_prediction`, `PredictionError` |
+| `config.py` | Reads `API_ENDPOINT` from env var (default: `http://prediction-api:8000`); defines model metadata constants | Constants |
+| `predict.py` | `make_signed_request(url, payload)` — SigV4-signed POST via `botocore.auth.SigV4Auth`; `make_prediction(payload: dict) → dict` — calls API with 60s timeout, raises `PredictionError` with status-specific messages | `make_prediction`, `PredictionError` |
 | `components.py` | `inject_styles()`, `render_header()`, `render_form() → dict\|None` (19 fields), `render_results(result)`, `render_sidebar()` | UI functions |
 
 ## Error Handling
@@ -42,6 +41,17 @@ The `PredictionError` exception provides user-friendly messages based on HTTP st
 | 502 | "The ML model endpoint is currently unavailable." |
 | 503 | "The ML model is starting up. Please wait a moment and try again." |
 | Other | "Prediction failed (HTTP {status}): {detail}" |
+
+## Authentication
+
+In production, the API Gateway route uses `AWS_IAM` authorization. The Streamlit app signs every request with AWS Signature Version 4 using `botocore.auth.SigV4Auth`:
+
+1. Boto3 resolves AWS credentials from the ECS task role (via container credential provider)
+2. The JSON payload is wrapped in a `botocore.awsrequest.AWSRequest`
+3. `SigV4Auth` adds `Authorization`, `X-Amz-Date`, and `X-Amz-Security-Token` headers
+4. The signed headers are passed to `requests.post()`
+
+The ECS task role must have `execute-api:Invoke` permission on the API Gateway resource. This is configured in the Terraform IAM module's custom task policy.
 
 ## API Contract
 
@@ -102,6 +112,5 @@ Access at `http://localhost:8501`
 
 | Setting | Location | Default |
 |---|---|---|
-| `API_ENDPOINT` | Environment variable / `.streamlit/secrets.toml` | `http://prediction-api:8000` |
-| `CHURN_THRESHOLD` | `config.py` | `0.5` |
+| `API_ENDPOINT` | Environment variable | `http://prediction-api:8000` |
 | Theme / layout | `.streamlit/config.toml` | centered, expanded sidebar |

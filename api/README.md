@@ -108,7 +108,7 @@ Pydantic validation constraints: `tenure` (0–100), `monthlyCharges` (0–200),
 
 ## Deployment
 
-**AWS (Lambda):** Container image built from `Dockerfile.lambda`, pushed to ECR. Terraform `modules/lambda` provisions the function with SageMaker invoke policy. API Gateway routes requests via `$default` catch-all — FastAPI handles all routing internally through Mangum.
+**AWS (Lambda):** Container image built from `Dockerfile.lambda`, pushed to ECR. Terraform `modules/lambda` provisions the function with SageMaker invoke policy. API Gateway routes requests via `$default` catch-all with `AWS_IAM` authorization — only callers with valid SigV4-signed requests (e.g., the ECS task role) can invoke the API. FastAPI handles all routing internally through Mangum.
 
 **Local development:**
 

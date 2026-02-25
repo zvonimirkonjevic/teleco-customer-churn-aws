@@ -17,7 +17,7 @@ End-to-end ML platform on AWS for predicting customer churn. Three-tier serverle
                                └──────────────┘                       └──────────────┘         └─────────────┘
 ```
 
-**Request flow:** Client → ALB → ECS Fargate (Streamlit) → API Gateway `/v1` → Lambda (FastAPI + Mangum) → preprocesses 19 raw features into 46-feature CSV vector → SageMaker XGBoost endpoint → churn probability.
+**Request flow:** Client → ALB → ECS Fargate (Streamlit) → SigV4-signed POST → API Gateway `/v1` (AWS_IAM auth) → Lambda (FastAPI + Mangum) → preprocesses 19 raw features into 46-feature CSV vector → SageMaker XGBoost endpoint → churn probability.
 
 ## Infrastructure
 
@@ -43,6 +43,7 @@ All cloud resources defined in Terraform with 10 modules, S3-backed remote state
 | Decision | Rationale |
 |---|---|
 | Lambda + API Gateway for prediction API | Decouples preprocessing from the UI; scales independently; avoids granting ECS tasks SageMaker permissions |
+| SigV4-signed requests + AWS_IAM auth | API Gateway requires IAM-authenticated requests — prevents unauthorized access if the API URL is discovered |
 | Pure Python preprocessing (no sklearn/numpy) | Eliminates heavy ML dependencies from Lambda — cold starts ~1s vs ~10s, image ~200MB vs ~1.5GB |
 | Serverless SageMaker endpoint | Scales to zero when idle — cost-optimized for demo/showcase workloads |
 | ECS Fargate + ALB | Managed compute for Streamlit; ALB provides health checks and public HTTP access |
