@@ -1,4 +1,3 @@
-# IAM Role for SageMaker Execution
 resource "aws_iam_role" "sagemaker_execution_role" {
   name = "${var.name_prefix}-sagemaker-execution-role"
 
@@ -98,7 +97,6 @@ resource "aws_iam_role" "ecs_task_role" {
   }
 }
 
-# Custom policies for task and execution roles
 resource "aws_iam_role_policy" "custom_task_access" {
   count  = var.create_custom_task_policy ? 1 : 0
   name   = "${var.name_prefix}-custom-task-policy"
@@ -113,7 +111,6 @@ resource "aws_iam_role_policy" "custom_execution_access" {
   policy = var.custom_execution_policy_json
 }
 
-# Lambda Execution Role (used by the Lambda function to access AWS resources)
 resource "aws_iam_role" "lambda_execution" {
   name = "${var.name_prefix}-lambda-execution-role"
 

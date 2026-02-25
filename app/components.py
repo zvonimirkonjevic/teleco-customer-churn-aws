@@ -8,11 +8,6 @@ import streamlit as st
 
 from config import MODEL_ALGORITHM, MODEL_ACCURACY, MODEL_AUC
 
-
-# ---------------------------------------------------------------------------
-# Styles
-# ---------------------------------------------------------------------------
-
 CUSTOM_CSS = """
 <style>
     .main-header {
@@ -44,16 +39,12 @@ CUSTOM_CSS = """
 
 
 def inject_styles() -> None:
-    """Inject custom CSS into the Streamlit page."""
+    """Injects custom CSS into the Streamlit page."""
     st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 
-# ---------------------------------------------------------------------------
-# Header
-# ---------------------------------------------------------------------------
-
 def render_header() -> None:
-    """Render the page header and subtitle."""
+    """Renders the page title, subtitle, and a divider."""
     st.markdown(
         '<p class="main-header">Telco Customer Churn Predictor</p>',
         unsafe_allow_html=True,
@@ -64,14 +55,8 @@ def render_header() -> None:
     )
     st.divider()
 
-
-# ---------------------------------------------------------------------------
-# Input form
-# ---------------------------------------------------------------------------
-
 def render_form() -> dict | None:
-    """
-    Render the customer data input form.
+    """Renders the customer data input form.
 
     Returns:
         A dict of customer features if the form was submitted, else ``None``.
@@ -226,13 +211,12 @@ def render_form() -> dict | None:
         "paperlessBilling": paperless_billing,
     }
 
-
-# ---------------------------------------------------------------------------
-# Results display
-# ---------------------------------------------------------------------------
-
 def render_results(result: dict) -> None:
-    """Display prediction results and actionable recommendations."""
+    """Displays prediction results and actionable recommendations.
+
+    Args:
+        result: Dict with ``churn_probability`` (float) and ``will_churn`` (bool).
+    """
     st.success("Prediction Complete!")
     st.subheader("Prediction Results")
 
@@ -274,13 +258,8 @@ def render_results(result: dict) -> None:
             """
         )
 
-
-# ---------------------------------------------------------------------------
-# Sidebar
-# ---------------------------------------------------------------------------
-
 def render_sidebar() -> None:
-    """Render the sidebar with model info and instructions."""
+    """Renders the sidebar with model info and usage instructions."""
     with st.sidebar:
         st.header("About")
         st.write(

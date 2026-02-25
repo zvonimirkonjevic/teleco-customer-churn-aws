@@ -1,5 +1,3 @@
-"""API configuration from environment variables."""
-
 import os
 
 SAGEMAKER_ENDPOINT_NAME: str = os.environ.get(

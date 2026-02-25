@@ -21,7 +21,7 @@ SCALER_STDS: list[float] = _params["scaler"]["stds"]
 
 
 def _get_sagemaker_client():
-    """Return a cached SageMaker runtime client (reused across Lambda invocations)."""
+    """Returns a cached SageMaker runtime client, reused across Lambda invocations."""
     global _client
     if _client is None:
         _client = boto3.client("sagemaker-runtime", region_name=AWS_REGION)
@@ -29,17 +29,40 @@ def _get_sagemaker_client():
 
 
 def _one_hot(value: str, categories: list[str], prefix: str) -> dict:
-    """Return one-hot encoded dict for a categorical value."""
+    """Returns a one-hot encoded dict for a categorical value.
+
+    Args:
+        value: The category value to encode.
+        categories: All possible category values.
+        prefix: Column name prefix for the encoded keys.
+
+    Returns:
+        Dict mapping ``{prefix}_{category}`` to 0 or 1.
+    """
     return {f"{prefix}_{cat}": 1 if cat == value else 0 for cat in categories}
 
 
 def _clean(val: str) -> str:
-    """Normalize category values to match training column names."""
+    """Normalizes category values to match training column names.
+
+    Args:
+        val: Raw category string from the input form.
+
+    Returns:
+        Cleaned string with spaces, parens, and hyphens replaced by underscores.
+    """
     return val.replace(" ", "_").replace("(", "").replace(")", "").replace("-", "_")
 
 
 def _tenure_group(tenure: int) -> str:
-    """Assign tenure to a bin matching training preprocessing."""
+    """Assigns tenure to a bin matching training preprocessing.
+
+    Args:
+        tenure: Customer tenure in months.
+
+    Returns:
+        Bin label such as ``"0_1yr"``, ``"1_2yr"``, ``"2_4yr"``, or ``"4_6yr"``.
+    """
     if tenure <= 12:
         return "0_1yr"
     elif tenure <= 24:
@@ -51,7 +74,14 @@ def _tenure_group(tenure: int) -> str:
 
 
 def _preprocess(payload: dict) -> list[float]:
-    """Transform raw form input into feature vector matching the trained model."""
+    """Transforms raw form input into a feature vector matching the trained model.
+
+    Args:
+        payload: Customer feature dictionary from the input form.
+
+    Returns:
+        Ordered list of floats ready for SageMaker inference.
+    """
     tenure = payload["tenure"]
     monthly = payload["monthlyCharges"]
     total = payload["totalCharges"]
@@ -67,10 +97,8 @@ def _preprocess(payload: dict) -> list[float]:
     ]
     total_services = sum(1 for s in services if s == "Yes")
 
-    # Build raw feature dict
     features = {}
 
-    # Binary features
     features["gender"] = 1 if payload["gender"] == "Male" else 0
     features["SeniorCitizen"] = 1 if payload["seniorCitizen"] == "Yes" else 0
     features["Partner"] = 1 if payload["partner"] == "Yes" else 0
@@ -85,7 +113,6 @@ def _preprocess(payload: dict) -> list[float]:
     features["AvgMonthlySpend"] = avg_monthly_spend
     features["TotalServices"] = total_services
 
-    # One-hot encoded categoricals
     features.update(_one_hot(
         _clean(payload["multipleLines"]),
         ["No", "No_phone_service", "Yes"], "MultipleLines"))
@@ -133,18 +160,13 @@ def _preprocess(payload: dict) -> list[float]:
 
 
 def make_prediction(payload: dict) -> dict:
-    """
-    Preprocess raw input, send to SageMaker endpoint, and return the result.
+    """Preprocesses raw input, sends to SageMaker endpoint, and returns the result.
 
-    Parameters
-    ----------
-    payload : dict
-        Customer feature dictionary produced by the input form.
+    Args:
+        payload: Customer feature dictionary produced by the input form.
 
-    Returns
-    -------
-    dict
-        ``{"churn_probability": float, "will_churn": bool}``
+    Returns:
+        Dict with ``churn_probability`` (float) and ``will_churn`` (bool).
     """
     logger.info("Processing prediction request")
     client = _get_sagemaker_client()

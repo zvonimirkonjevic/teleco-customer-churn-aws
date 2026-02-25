@@ -16,11 +16,23 @@ app = FastAPI(
 
 @app.get("/health")
 def health_check():
+    """Returns a simple health status for readiness probes."""
     return {"status": "healthy"}
 
 
 @app.post("/predict", response_model=PredictionResponse)
 def predict(payload: PredictionRequest):
+    """Accepts customer features and returns a churn prediction.
+
+    Args:
+        payload: Customer feature data validated by Pydantic.
+
+    Returns:
+        PredictionResponse with churn probability and boolean churn flag.
+
+    Raises:
+        HTTPException: On SageMaker errors, missing fields, or invalid data.
+    """
     try:
         result = make_prediction(payload.model_dump())
         return PredictionResponse(**result)

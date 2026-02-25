@@ -1,4 +1,3 @@
-# SageMaker invoke policy for Lambda execution role
 resource "aws_iam_role_policy" "sagemaker_invoke" {
   name = "${var.name_prefix}-lambda-sagemaker-invoke"
   role = var.execution_role_name
@@ -13,7 +12,6 @@ resource "aws_iam_role_policy" "sagemaker_invoke" {
   })
 }
 
-# Lambda Function
 resource "aws_lambda_function" "prediction_api" {
   function_name = "${var.name_prefix}-prediction-api"
   role          = var.execution_role_arn

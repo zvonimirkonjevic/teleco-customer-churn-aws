@@ -14,14 +14,21 @@ from config import API_ENDPOINT
 
 
 class PredictionError(Exception):
-    """Raised when the prediction API returns an error."""
-
     def __init__(self, message: str, status_code: int | None = None):
         self.status_code = status_code
         super().__init__(message)
 
 
 def make_signed_request(url: str, payload: dict) -> dict:
+    """Sends a SigV4-signed POST request to an AWS API Gateway endpoint.
+
+    Args:
+        url: The full URL to send the request to.
+        payload: JSON-serializable request body.
+
+    Returns:
+        The ``requests.Response`` object.
+    """
     session = boto3.Session()
     credentials = session.get_credentials().get_frozen_credentials()
 
@@ -44,23 +51,16 @@ def make_signed_request(url: str, payload: dict) -> dict:
 
 
 def make_prediction(payload: dict) -> dict:
-    """
-    Send customer features to the prediction API and return the result.
+    """Sends customer features to the prediction API and returns the result.
 
-    Parameters
-    ----------
-    payload : dict
-        Customer feature dictionary produced by the input form.
+    Args:
+        payload: Customer feature dictionary produced by the input form.
 
-    Returns
-    -------
-    dict
-        ``{"churn_probability": float, "will_churn": bool}``
+    Returns:
+        Dict with ``churn_probability`` (float) and ``will_churn`` (bool).
 
-    Raises
-    ------
-    PredictionError
-        With a user-friendly message describing what went wrong.
+    Raises:
+        PredictionError: With a user-friendly message describing what went wrong.
     """
     try:
         response = make_signed_request(f"{API_ENDPOINT}/predict", payload)

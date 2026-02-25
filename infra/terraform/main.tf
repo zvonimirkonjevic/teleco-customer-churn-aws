@@ -8,7 +8,6 @@ module "iam_roles" {
   attach_ssm_policy        = false
   create_custom_task_policy = true
 
-  # Add custom policy for execution role
   create_custom_execution_policy = true
   custom_execution_policy_json = jsonencode({
     Version = "2012-10-17",
@@ -98,7 +97,6 @@ module "alb_sg" {
         }
     ]
 
-    # Default egress is already set to allow all outbound traffic
 }
 
 module "ecs_sg" {
@@ -117,7 +115,6 @@ module "ecs_sg" {
         }
     ]
 
-    # Default egress is already set to allow all outbound traffic
 }
 
 module "ecs" {

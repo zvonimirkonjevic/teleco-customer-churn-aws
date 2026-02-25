@@ -1,4 +1,3 @@
-# HTTP API Gateway
 resource "aws_apigatewayv2_api" "prediction_api" {
   name          = "${var.name_prefix}-prediction-api"
   protocol_type = "HTTP"
@@ -9,7 +8,6 @@ resource "aws_apigatewayv2_api" "prediction_api" {
   }
 }
 
-# Lambda integration
 resource "aws_apigatewayv2_integration" "lambda" {
   api_id                 = aws_apigatewayv2_api.prediction_api.id
   integration_type       = "AWS_PROXY"
@@ -26,14 +24,12 @@ resource "aws_apigatewayv2_route" "default" {
   authorization_type = "AWS_IAM"
 }
 
-# Deployment stage
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.prediction_api.id
   name        = var.stage_name
   auto_deploy = true
 }
 
-# Allow API Gateway to invoke the Lambda function
 resource "aws_lambda_permission" "api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"

@@ -1,4 +1,3 @@
-# IAM configuration variables
 variable "name_prefix" {
   description = "Prefix for naming IAM roles"
   type        = string
@@ -9,7 +8,6 @@ variable "s3_bucket_name" {
   type        = string
 }
 
-# SageMaker endpoint configuration variables
 variable "sagemaker_endpoint_default_region" {
     description = "AWS region for resource deployment"
     type = string
@@ -30,7 +28,6 @@ variable "sagemaker_memory_size_in_mb" {
     type = number
 }
 
-# VPC configuration variables
 variable "vpc_name" {
   description = "Name of the VPC"
   type = string
@@ -71,7 +68,6 @@ variable "private_route_table_cidr_block" {
   type = string
 }
 
-# ALB Security group configuration variables
 variable "alb_sg_name" {
   description = "Name of the ALB security group"
   type = string
@@ -97,7 +93,6 @@ variable "alb_sg_ingress_cidr_blocks" {
   type = list(string)
 }
 
-# ECS Task Security group configuration variables
 variable "ecs_task_sg_name" {
   description = "Name of the ECS task security group"
   type = string
@@ -114,7 +109,6 @@ variable "container_port" {
   default = 8501
 }
 
-# ECS Cluster configuration variables
 variable "enable_container_insights" {
   description = "Whether to enable Container Insights for the ECS cluster"
   type = bool
@@ -144,7 +138,6 @@ variable "default_capacity_provider_strategy" {
   ]
 }
 
-# ECS Task Definition configuration variables
 variable "container_name" {
   description = "Name of the container in the ECS task definition"
   type = string
@@ -170,7 +163,6 @@ variable "region" {
   type = string
 }
 
-# ECS Service configuration variables
 variable "desired_count" {
   description = "Desired number of tasks in the ECS service"
   type = number
@@ -183,7 +175,6 @@ variable "environment" {
   default = "dev"
 }
 
-# Lambda configuration variables
 variable "lambda_image_uri" {
   description = "ECR image URI for the Lambda prediction API"
   type        = string
